@@ -1,0 +1,30 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %} {% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'main/css/base.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body>
+    <div class="sticky top-4 w-full px-6 z-50">
+        <div class="max-w-6xl mx-auto bg-[#FBFBFB] border-1 border-[#EDEDED] rounded-2xl px-6 py-4 flex justify-between items-center">
+
+            <h1 class="text-xl font-black">TOXIFY</h1>
+
+            <nav class="flex gap-6">
+              <a href="#" class="hover:text-blue-500 transition">Home</a>
+            </nav>
+
+        </div>
+    </div>
+    <main class="pt-10 max-w-4xl mx-auto px-6">
+        {% block content %}
+        {% endblock %}
+    </main>
+</body>
+</html>
