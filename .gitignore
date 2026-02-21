@@ -1,0 +1,10 @@
+.venv
+.env
+.idea
+*.xml
+*.sqlite3
+*.pyc
+media
+pycache
+venv
+migrations
