@@ -6,5 +6,6 @@ class User(AbstractUser):
     pass
 
 class Profile(models.Model):
-    pass
+    name = models.CharField(max_length=100)
+    bio = models.TextField()
 
