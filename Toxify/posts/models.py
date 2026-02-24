@@ -28,7 +28,3 @@ class Post(models.Model):
             validators=[
             FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'webp']),
             validate_size])
-
-
-
-
