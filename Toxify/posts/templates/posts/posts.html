@@ -1,0 +1,29 @@
+{% extends 'main/base.html' %}
+
+{% block title %} Toxify {% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-6">
+    <h2> Пости профілю: {{ profile.name }}</h2>
+
+    <div>
+        {% for post in profile.posts.all %}
+            <div>
+                {% if post.image %}
+                    <div>
+                        <img src="{{ post.image.url }}" alt="Post image" class="post-img">
+                    </div>
+                {% endif %}
+
+                <div>
+                    {% if post.body %}
+                        <p>{{ post.body|linebreaks }}</p>
+                    {% endif %}
+                    <small>{{ post.created_at|date:"d.m.Y H:i" }}</small>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}
