@@ -12,22 +12,20 @@
 </head>
 <body>
     <div class="sticky top-4 w-full px-6 z-50">
-        <div class="max-w-6xl mx-auto bg-black border-1 border-white/40 rounded-2xl px-6 py-4 flex justify-between items-center">
+        <div class="max-w-6xl mx-auto bg-black border-1 border-white/40 px-6 py-4 flex justify-between items-center">
 
-            <h1 class="text-xl font-black">TOXIFY</h1>
+            <a class="text-xl font-black px-4 py-2 border-2 border-black border-dashed hover:border-white cursor-pointer">TOXIFY</a>
 
             <nav class="flex gap-6">
               <a href="{% url 'posts' %}" class="hover:text-blue-500 transition">Home</a>
-            {% if request.user.is_authenticated %}
-                <a href="{% url 'profile_detail' request.user.username %}" class="hover:text-blue-500 transition">Profile</a>
-            {% else %}
-                <a href="{% url 'login' %}" class="hover:text-blue-500 transition">Login</a>
-            {% endif %}
               {% if user.is_authenticated %}
-                <form action="{% url 'logout' %}" method="post" style="display: inline;">
-                  {% csrf_token %}
-                  <button type="submit" class="bg-transparent border-none hover:text-blue-500 transition cursor-pointer p-0 font-inherit text-inherit">Вийти</button>
-                </form>
+                <a href="{% url 'profile_detail' request.user.username %}"  class="hover:underline underline-offset-2 decoration-2 text-white/40 hover:text-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-icon lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </a>
+<!--                <form action="{% url 'logout' %}" method="post" style="display: inline;">-->
+<!--                  {% csrf_token %}-->
+<!--                  <button type="submit" class="bg-transparent border-none hover:text-blue-500 transition cursor-pointer p-0 font-inherit text-inherit">Вийти</button>-->
+<!--                </form>-->
               {% else %}
                 <a href="{% url 'login' %}" class="hover:text-blue-500 transition">Вхід</a>
                 <a href="{% url 'register' %}" class="hover:text-blue-500 transition">Реєстрація</a>

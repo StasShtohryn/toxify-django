@@ -9,7 +9,7 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),
 
     # Профіль
-    path("profile/edit/", views.ProfileEditView.as_view(), name="profile_edit"),
+    path("edit/", views.ProfileEditView.as_view(), name="profile_edit"),
     path("users/<str:username>/", views.ProfileDetailView.as_view(), name="profile_detail"),
 
     # Follow/Unfollow
