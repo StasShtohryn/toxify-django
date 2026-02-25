@@ -18,7 +18,7 @@ class RegisterView(FormView):
     GET  → рендерить форму реєстрації
     POST → створює User + UserProfile, логінить, редіректить на профіль
     """
-    template_name = "users/register.html"
+    template_name = "profiles/register.html"
     form_class = RegisterForm
 
     def dispatch(self, request, *args, **kwargs):
@@ -42,7 +42,7 @@ class ProfileDetailView(DetailView):
     URL: /users/<username>/
     """
     model = Profile
-    template_name = "users/profile_detail.html"
+    template_name = "profiles/profile_detail.html"
     context_object_name = "profile"
 
     def get_object(self, queryset=None):
@@ -75,7 +75,7 @@ class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, View):
 
     Розрізняються по імені submit-кнопки в POST: save_profile / save_account
     """
-    template_name = "users/profile_edit.html"
+    template_name = "profiles/profile_edit.html"
     login_url = reverse_lazy("login")
 
     def test_func(self):
