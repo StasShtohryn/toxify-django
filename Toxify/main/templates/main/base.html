@@ -12,16 +12,22 @@
 </head>
 <body>
     <div class="sticky top-4 w-full px-6 z-50">
-        <div class="max-w-6xl mx-auto bg-[#FBFBFB] border-1 border-[#EDEDED] rounded-2xl px-6 py-4 flex justify-between items-center">
+        <div class="max-w-6xl mx-auto bg-black border-1 border-white/40 rounded-2xl px-6 py-4 flex justify-between items-center">
 
             <h1 class="text-xl font-black">TOXIFY</h1>
 
             <nav class="flex gap-6">
-              <a href="#" class="hover:text-blue-500 transition">Home</a>
-<!--===============================================================================================-->
-                <a href="#" class="hover:text-blue-500 transition">Profile</a>
-<!--===============================================================================================-->
-
+              <a href="{% url 'posts' %}" class="hover:text-blue-500 transition">Home</a>
+              <a href="{% url 'my_profile' %}" class="hover:text-blue-500 transition">Profile</a>
+              {% if user.is_authenticated %}
+                <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="bg-transparent border-none hover:text-blue-500 transition cursor-pointer p-0 font-inherit text-inherit">Вийти</button>
+                </form>
+              {% else %}
+                <a href="{% url 'login' %}" class="hover:text-blue-500 transition">Вхід</a>
+                <a href="{% url 'register' %}" class="hover:text-blue-500 transition">Реєстрація</a>
+              {% endif %}
             </nav>
 
         </div>
