@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'main',
     'profiles',
     'posts',
+    'profiles.apps.UsersConfig'
 ]
 
 MIDDLEWARE = [
