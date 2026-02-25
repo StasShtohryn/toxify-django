@@ -35,8 +35,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'main',
-    'profiles',
     'posts',
+    'profiles.apps.ProfileConfig'
 ]
 
 MIDDLEWARE = [
@@ -109,6 +109,9 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 AUTH_USER_MODEL = 'profiles.User'
+LOGIN_URL = '/profile/login/'
+LOGIN_REDIRECT_URL = '/profile/my_profile/'
+LOGOUT_REDIRECT_URL = '/'
 
 
 
