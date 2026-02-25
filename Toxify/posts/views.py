@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic import ListView
 
-from posts.models import Post
+from .models import Post
 from profiles.models import Profile
 
 
@@ -11,7 +11,7 @@ from profiles.models import Profile
 
 class PostsListView(ListView):
     model = Post
-    template_name = 'posts/posts.html'
+    template_name = 'posts/index.html'
     context_object_name = 'posts'
 
 
