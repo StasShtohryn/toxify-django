@@ -1,13 +1,16 @@
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
-from django.views.generic import ListView
+from django.views.generic import ListView, TemplateView
 
 from .models import Post
 from profiles.models import Profile, User
 
 
 # Create your views here.
+
+class SearchView(TemplateView):
+    template_name = 'posts/search.html'
 
 class PostsListView(ListView):
     model = Post
