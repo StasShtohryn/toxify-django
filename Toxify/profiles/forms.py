@@ -1,8 +1,13 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
 from .models import User, Profile
 
+class LoginForm(AuthenticationForm):
+    error_messages = {
+        'invalid_login': 'Невірний логін або пароль.',
+        'inactive': 'Цей акаунт неактивний.',
+    }
 
 class RegisterForm(UserCreationForm):
     """Реєстрація: username + email + пароль."""
