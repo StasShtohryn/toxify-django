@@ -22,6 +22,7 @@ class Profile(models.Model):
     avatar = models.ImageField(
         upload_to="avatars/",
         blank=True,
+        default='avatars/default.jpg',
         null=True,
         help_text="Фото профілю",
     )
