@@ -2,6 +2,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic import ListView, TemplateView
+from django.db.models import Q
 
 from .models import Post
 from profiles.models import Profile, User
@@ -11,6 +12,22 @@ from profiles.models import Profile, User
 
 class SearchView(TemplateView):
     template_name = 'posts/search.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        query = self.request.GET.get('q', '').strip()
+        context['query'] = query
+
+        if query:
+            context['posts'] = Post.objects.filter(
+                Q(title__icontains=query) | Q(body__icontains=query)
+            ).select_related('userProfile').order_by('-created_at')[:30]
+
+            context['profiles'] = Profile.objects.filter(
+                Q(user__username__icontains=query) | Q(bio__icontains=query)
+            ).select_related('user').order_by('-created_at')[:20]
+
+        return context
 
 class PostsListView(ListView):
     model = Post
