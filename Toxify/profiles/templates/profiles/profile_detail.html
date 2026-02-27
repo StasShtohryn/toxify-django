@@ -7,9 +7,9 @@
   <div class="p-6 border-b border-white/10">
     <div class="flex justify-between items-start mb-6">
       <div>
-        <h2 class="text-2xl font-bold tracking-tight mb-1">{{request.user.username}}</h2>
+        <h2 class="text-2xl font-bold tracking-tight mb-1">{{profile.user.username}}</h2>
           <div class="flex items-center gap-2 mb-4">
-            <span class="text-sm text-white/60">@{{request.user.username}}</span>
+            <span class="text-sm text-white/60">@{{profile.user.username}}</span>
             <span class="px-2 py-0.5 bg-white/5 text-[10px] text-white/40 border border-white/10">tag</span>
           </div>
         </div>
@@ -70,8 +70,8 @@
           </div>
           <div class="flex-1">
             <div class="flex justify-between items-center mb-1">
-              <span class="font-bold">{{request.user.username}}</span>
-              <span class="text-xs text-white/40">@{{request.user.username}}</span>
+              <span class="font-bold">{{profile.user.username}}</span>
+              <span class="text-xs text-white/40">@{{profile.user.username}}</span>
             </div>
             <p class="text-sm text-white/60">
               first post
@@ -84,39 +84,9 @@
 
 
 
-  {% for post in profile.posts.all%}
-    <div class="divide-y divide-white/10">
-      <div>
-        <div class="p-4 flex gap-4">
-          <div class="w-12 h-12 overflow-hidden">
-            <img src="https://media.istockphoto.com/id/185262648/photo/red-apple-with-leaf-isolated-on-white-background.jpg?s=612x612&w=0&k=20&c=gUTvQuVPUxUYX1CEj-N3lW5eRFLlkGrU_cwwwOWxOh8=" alt="@user_01" class="w-full h-full object-cover"/>
-          </div>
-          <div class="flex-1">
-            <div class="flex justify-between items-center mb-1">
-              <span class="font-bold">{{request.user.username}}</span>
-              <span class="text-xs text-white/40">@{{request.user.username}}</span>
-            </div>
-            <p class="text-sm text-white/60">
-              {{post.title}}
-            </p>
-            <p class="text-sm text-white/60">
-              {{post.body}}
-            </p>
-            <p class="text-sm text-white/60">
-              {% for tag in post.hashtags.all %}
-              <p> {{tag}} </p>
-              {% endfor %}
-            </p>
-            {% if post.images %}
-                <div class="mt-4 overflow-hidden border border-white/5">
-                    <img src="{{ post.images.url }}" alt="{{ post.title }}" class="w-full object-cover">
-                </div>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-    </div>
-  {% endfor %}
+{% for post in profile.posts.all%}
+  {% include 'posts/base_post.html' with post=post %}
+{% endfor %}
 
 
 
