@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.views.generic import ListView, TemplateView
 from django.db.models import Q
 
-from .models import Post
+from .models import Post, Hashtag
 from profiles.models import Profile, User
 
 
@@ -45,13 +45,23 @@ class PostCreateView(CreateView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        form.instance.profile = self.userProfile
-        return super().form_valid(form)
+        form.instance.userProfile = self.userProfile
+
+        response = super().form_valid(form)
+
+        hashtags_str = self.request.POST.get('hashtags_input', '')
+        if hashtags_str:
+            tag_list = [t.strip().strip('#').lower() for t in hashtags_str.split(',') if t.strip()]
+            for tag_name in tag_list:
+                tag, created = Hashtag.objects.get_or_create(name=tag_name)
+                self.object.hashtags.add(tag)
+
+        return response
 
     def get_success_url(self):
         return reverse('profile_detail', kwargs={'username': self.userProfile.user.username})
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['profile'] = self.request.user.username
+        context['profile'] = self.userProfile
         return context
