@@ -1,0 +1,5 @@
+django
+python-dotenv
+django-split-settings
+pillow
+django-widget-tweaks
