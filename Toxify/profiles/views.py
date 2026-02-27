@@ -62,6 +62,7 @@ class ProfileDetailView(DetailView):
             and self.request.user.profile.is_following(profile)
         )
         context["posts"] = profile.posts.order_by("-created_at")[:20]
+        print(context)
         return context
 
 
