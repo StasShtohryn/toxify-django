@@ -1,6 +1,10 @@
 # toxify-django
 A Django-powered social network inspired by Twitter — built for hot takes, fast discussions, and chaotic community energy.
 
+<div align="center">
+  <img src="https://kfsim1lapad8t68g.public.blob.vercel-storage.com/toxify.jpg" width="1024" alt="Toxify Image">
+</div>
+
 ## Virtual Environment
 
 Create a virtual environment:
