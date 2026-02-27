@@ -18,10 +18,27 @@ class SearchView(TemplateView):
         query = self.request.GET.get('q', '').strip()
         context['query'] = query
 
-        if query:
+        if not query:
+            return context
+
+        if query.startswith('#'):
+            tag_name = query.lstrip('#').lower()
             context['posts'] = Post.objects.filter(
-                Q(title__icontains=query) | Q(body__icontains=query)
-            ).select_related('userProfile').order_by('-created_at')[:30]
+                hashtags__name__icontains=tag_name
+            ).select_related('userProfile__user').distinct().order_by('-created_at')[:30]
+            context['search_type'] = 'hashtag'
+
+        elif query.startswith('@'):
+            username = query.lstrip('@')
+            context['profiles'] = Profile.objects.filter(
+                user__username__icontains=username
+            ).select_related('user').order_by('-created_at')[:20]
+            context['search_type'] = 'mention'
+
+        else:
+            context['posts'] = Post.objects.filter(
+                Q(title__icontains=query) | Q(body__icontains=query) | Q(hashtags__name__icontains=query)
+            ).select_related('userProfile__user').distinct().order_by('-created_at')[:30]
 
             context['profiles'] = Profile.objects.filter(
                 Q(user__username__icontains=query) | Q(bio__icontains=query)
