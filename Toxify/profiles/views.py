@@ -7,8 +7,9 @@ from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import DetailView, FormView
 
+from posts.models import Post
 from .forms import ProfileEditForm, RegisterForm, UsernameEditForm
-from .models import User, Profile
+from .models import User, Profile, Repost
 
 
 # ── Реєстрація ────────────────────────────────────────────────────────────────
@@ -155,6 +156,52 @@ class FollowToggleView(LoginRequiredMixin, View):
             })
 
         return redirect("profile_detail", username=username)
+
+    @staticmethod
+    def _is_ajax(request) -> bool:
+        return request.headers.get("x-requested-with") == "XMLHttpRequest"
+
+
+
+class RepostToggleView(LoginRequiredMixin, View):
+    """
+    POST /posts/<pk>/repost/
+    Якщо юзер ще не репостив — створює Repost.
+    Якщо вже репостив — видаляє.
+    Підтримує звичайний POST (редірект) та AJAX (JSON).
+    """
+    login_url = reverse_lazy("login")
+
+    def post(self, request, pk: int):
+        post = get_object_or_404(Post, pk=pk)
+
+        # Не можна репостити власний пост
+        if post.userProfile == request.user.profile:
+            if self._is_ajax(request):
+                return JsonResponse(
+                    {"error": "Не можна репостити власний пост."}, status=400
+                )
+            return redirect("post_detail", pk=pk)
+
+        repost, created = Repost.objects.get_or_create(
+            profile=request.user.profile,
+            post=post,
+        )
+
+        if not created:
+            # Вже репостив — видаляємо
+            repost.delete()
+            reposted = False
+        else:
+            reposted = True
+
+        if self._is_ajax(request):
+            return JsonResponse({
+                "reposted": reposted,
+                "reposts_count": post.reposted_by.count(),
+            })
+
+        return redirect("post_detail", pk=pk)
 
     @staticmethod
     def _is_ajax(request) -> bool:
