@@ -3,6 +3,14 @@
 body {
   font-family: "JetBrains Mono", monospace;
   background-color: black;
-  color: white;
+  color: rgb(171, 245, 193);
   margin: 0;
+}
+
+input, textarea, select, button {
+  color: rgb(171, 245, 193);
+}
+
+::placeholder {
+  color: rgba(171, 245, 193, 0.3);
 }
