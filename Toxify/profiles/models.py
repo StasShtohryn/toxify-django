@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models import Count
 
-
 class User(AbstractUser):
     pass
 
@@ -18,6 +17,12 @@ class Profile(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name="profile",
+    )
+    reposted_posts = models.ManyToManyField(
+        "posts.Post",
+        blank=True,
+        through="Repost",
+        # related_name прибираємо — він вже є в Repost.post
     )
     avatar = models.ImageField(
         upload_to="avatars/",
@@ -113,3 +118,21 @@ class Profile(models.Model):
             level = 5
         self.toxicity_level = level
         self.save(update_fields=["toxicity_level"])
+
+
+
+class Repost(models.Model):
+    profile = models.ForeignKey(
+        Profile,
+        on_delete=models.CASCADE,
+        related_name="reposts",
+    )
+    post = models.ForeignKey(
+        "posts.Post",
+        on_delete=models.CASCADE,
+        related_name="reposted_by",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("profile", "post")
