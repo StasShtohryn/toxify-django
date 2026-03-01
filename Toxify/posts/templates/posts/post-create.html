@@ -3,9 +3,46 @@
 {% block title %} Створення посту {% endblock %}
 
 {% block content %}
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit"> Опублікувати </button>
-</form>
+
+<div class="max-w-2xl mx-auto mb-4">
+    <a href="{% url 'profile_detail' username=profile.user.username %}" class="inline-flex items-center gap-2 text-white/40 hover:text-white transition-colors group">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:-translate-x-1">
+            <path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>
+        </svg>
+        <span class="text-xs font-bold uppercase tracking-wider">Go back </span>
+    </a>
+</div>
+
+<div class="max-w-2xl mx-auto p-6 bg-black border border-white/10">
+    <h1 class="text-xl font-bold mb-6">CREATE POST</h1>
+
+    <form method="post" enctype="multipart/form-data" class="space-y-4">
+        {% csrf_token %}
+
+        <div>
+            <label class="block text-xs text-white/40 mb-1">TITLE</label>
+            {{ form.title }}
+        </div>
+
+        <div>
+            <label class="block text-xs text-white/40 mb-1" rows="3">CONTENT</label>
+            {{ form.body }}
+        </div>
+
+        <div>
+            <label class="block text-xs text-white/40 mb-1">HASHTAGS (через кому)</label>
+            <input type="text" name="hashtags_input" placeholder="toxic, drama, life"
+                   class="w-full bg-transparent border border-white/20 p-2 text-sm focus:outline-none focus:border-white">
+        </div>
+
+        <div>
+            <label class="block text-xs text-white/40 mb-1">IMAGE</label>
+            {{ form.images }}
+        </div>
+
+        <button type="submit" class="w-full py-3 border border-white/40 hover:bg-white/10 transition-colors font-bold uppercase">
+            Опублікувати
+        </button>
+    </form>
+</div>
 {% endblock %}
