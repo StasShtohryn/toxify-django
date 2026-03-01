@@ -1,14 +1,14 @@
 <div class="max-w-2xl mx-auto space-y-4">
     <div class="border-b border-white/10 p-4 hover:bg-white/[0.02] transition-colors flex gap-3">
         <div class="flex flex-col items-center gap-2">
-            <img src="https://media.istockphoto.com/id/185262648/photo/red-apple-with-leaf-isolated-on-white-background.jpg?s=612x612&w=0&k=20&c=gUTvQuVPUxUYX1CEj-N3lW5eRFLlkGrU_cwwwOWxOh8=" alt="profile pic" class="w-10 h-10 border border-white/20 object-cover">
+            <img src="{{post.userProfile.avatar.url}}" alt="profile pic" class="w-10 h-10 border border-white/20 object-cover">
             <div class="w-[2px] h-full bg-white/10"></div>
         </div>
         <div class="flex-1">
             <div class="flex justify-between items-start mb-1">
                 <div class="flex items-center gap-2">
-                    <span class="font-bold text-sm">{{post.userProfile.user.username}}</span>
-                    <span class="text-white/40 text-xs">2h</span>
+                    <a href="{% url 'profile_detail' post.userProfile.user.username %}" class="font-bold text-sm hover:underline">{{post.userProfile.user.username}}</a>
+                    <span class="text-white/40 text-xs">{{ post.created_at|timesince }} тому</span>
                 </div>
                 <button class="text-white/40 hover:text-white">...</button>
             </div>

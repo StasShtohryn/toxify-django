@@ -106,7 +106,7 @@ class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, View):
             if form.is_valid():
                 form.save()
                 messages.success(request, "Профіль оновлено ✅")
-                return redirect("profile_edit")
+                return redirect("profile_detail", username=request.user.username)
             return self._render(request, form, UsernameEditForm(instance=request.user))
 
         elif "save_account" in request.POST:
@@ -114,10 +114,10 @@ class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, View):
             if form.is_valid():
                 form.save()
                 messages.success(request, "Акаунт оновлено ✅")
-                return redirect("profile_edit")
+                return redirect("profile_detail", username=request.user.username)
             return self._render(request, ProfileEditForm(instance=request.user.profile), form)
 
-        return redirect("profile_edit")
+        return redirect("profile_detail", username=request.user.username)
 
 
 # ── Follow / Unfollow ─────────────────────────────────────────────────────────

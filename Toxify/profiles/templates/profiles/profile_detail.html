@@ -15,7 +15,7 @@
         </div>
         <div class="w-20 h-20 border border-white/20 bg-white/5 shrink-0">
           <img
-            src="https://media.istockphoto.com/id/185262648/photo/red-apple-with-leaf-isolated-on-white-background.jpg?s=612x612&w=0&k=20&c=gUTvQuVPUxUYX1CEj-N3lW5eRFLlkGrU_cwwwOWxOh8="
+            src="{{profile.avatar.url}}"
             alt="profile pic"
             class="w-full h-full object-cover"
             referrerpolicy="no-referrer"
@@ -24,7 +24,7 @@
       </div>
 
       <p class="text-sm text-white/80 mb-6 leading-relaxed">
-        user bio
+        {% if profile.bio %}{{profile.bio}}{% else %}no bio yet.{% endif %}
       </p>
 
       <div class="flex justify-between items-center">
@@ -32,18 +32,24 @@
           3 FOLLOWERS
         </div>
         <div class="flex gap-2">
-          <a href="{% url 'post_create' profile.user.username %}" type="submit" class="px-4 py-2 border border-white/20 text-xs font-bold hover:bg-white/5 transition-colors cursor-pointer">
-          CREATE POST
-        </a>
-          <button class="px-4 py-2 border border-white/20 text-xs font-bold hover:bg-white/5 transition-colors cursor-pointer">
-            EDIT PROFILE
-          </button>
-          <form action="{% url 'logout' %}" method="post" style="display: inline;">
-            {% csrf_token %}
-            <button type="submit" class="px-4 py-2 border border-white/20 text-xs font-bold hover:bg-white/5 transition-colors cursor-pointer">
-              EXIT
-            </button>
-          </form>
+          {% if is_owner %}
+            <a href="{% if not user.is_authenticated %}{% url 'login' %}{% else %}javascript:void(0){% endif %}" id="openCreatePostModal" class="px-4 py-2 border border-white/20 text-xs font-bold hover:bg-white/5 transition-colors cursor-pointer">
+              CREATE POST
+            </a>
+            <a href="{% url 'profile_edit' %}" class="px-4 py-2 border border-white/20 text-xs font-bold hover:bg-white/5 transition-colors cursor-pointer">
+              EDIT PROFILE
+            </a>
+            <form action="{% url 'logout' %}" method="post" style="display: inline;">
+              {% csrf_token %}
+              <button type="submit" class="px-4 py-2 border border-white/20 text-xs font-bold hover:bg-white/5 transition-colors cursor-pointer">
+                EXIT
+              </button>
+            </form>
+          {% else %}
+            <a href="#" class="px-4 py-2 border border-white/20 text-xs font-bold hover:bg-white/5 transition-colors cursor-pointer">
+              FOLLOW
+            </a>
+          {% endif %}
         </div>
       </div>
     </div>
@@ -63,30 +69,19 @@
     </div>
 
     <div class="divide-y divide-white/10">
-      <div>
-        <div class="p-4 flex gap-4">
-          <div class="w-12 h-12 overflow-hidden">
-            <img src="https://media.istockphoto.com/id/185262648/photo/red-apple-with-leaf-isolated-on-white-background.jpg?s=612x612&w=0&k=20&c=gUTvQuVPUxUYX1CEj-N3lW5eRFLlkGrU_cwwwOWxOh8=" alt="@user_01" class="w-full h-full object-cover"/>
-          </div>
-          <div class="flex-1">
-            <div class="flex justify-between items-center mb-1">
-              <span class="font-bold">{{profile.user.username}}</span>
-              <span class="text-xs text-white/40">@{{profile.user.username}}</span>
-            </div>
-            <p class="text-sm text-white/60">
-              first post
-            </p>
-          </div>
-        </div>
-      </div>
+      {% if not profile.posts.exists %}
+        <h2 class="text-center uppercase mt-2">no posts</h2>
+
+      {% else %}
+        {% for post in profile.posts.all%}
+          {% include 'posts/base_post.html' with post=post %}
+        {% endfor %}
+      {% endif %}
     </div>
 </div>
 
 
 
-{% for post in profile.posts.all%}
-  {% include 'posts/base_post.html' with post=post %}
-{% endfor %}
 
 
 
