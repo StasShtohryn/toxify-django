@@ -89,25 +89,41 @@
                 </form>
             </div>
         </div>
-
-
     </div>
+
+
 <script>
-    const openCreatePostModalBtn = document.getElementById('openCreatePostModal')
-    const closeCreatePostModalBtn = document.getElementById('closeCreatePostModal')
-    const createPostModal = document.getElementById('createPostModal')
+    document.addEventListener('DOMContentLoaded', () => {
+        const openCreatePostModalBtn = document.getElementById('openCreatePostModal')
+        const closeCreatePostModalBtn = document.getElementById('closeCreatePostModal')
+        const createPostModal = document.getElementById('createPostModal')
 
-    openCreatePostModalBtn.addEventListener('click', () => {
-    if (openCreatePostModalBtn.getAttribute('href').includes('login')) {
-        return;
-    }
-        createPostModal.classList.remove('opacity-0', 'pointer-events-none');
-        createPostModal.classList.add('opacity-100');
-    });
+        if (openCreatePostModalBtn && createPostModal) {
+            openCreatePostModalBtn.addEventListener('click', (e) => {
+            if (openCreatePostModalBtn.getAttribute('href').includes('login')) {
+                return;
+            }
+                e.preventDefault();
+                createPostModal.classList.remove('opacity-0', 'pointer-events-none');
+                createPostModal.classList.add('opacity-100');
+            });
+        }
 
-    closeCreatePostModalBtn.addEventListener('click', () => {
-        createPostModal.classList.remove('opacity-100');
-        createPostModal.classList.add('opacity-0', 'pointer-events-none');
+        if (closeCreatePostModalBtn && createPostModal) {
+            closeCreatePostModalBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                createPostModal.classList.remove('opacity-100');
+                createPostModal.classList.add('opacity-0', 'pointer-events-none');
+            });
+
+            // ЗАКРИТТЯ ПРИ КЛІКУ НА ФОН
+            createPostModal.addEventListener('click', (e) => {
+                if (e.target === createPostModal) {
+                    createPostModal.classList.remove('opacity-100');
+                    createPostModal.classList.add('opacity-0', 'pointer-events-none');
+                }
+            });
+        }
     });
 </script>
 </body>

@@ -8,7 +8,13 @@
         <div class="flex-1">
             <div class="flex justify-between items-start mb-1">
                 <div class="flex items-center gap-2">
-                    <a href="{% url 'profile_detail' post.userProfile.user.username %}" class="font-bold text-sm hover:underline">{{post.userProfile.user.username}}</a>
+                    {% if post.userProfile %}
+                        <a href="{% url 'profile_detail' post.userProfile.user.username %}" class="font-bold text-sm hover:underline">
+                            {{ post.userProfile.user.username }}
+                        </a>
+                    {% else %}
+                        <span class="font-bold text-sm text-white/20">Unknown User</span>
+                    {% endif %}
                     <span class="text-white/40 text-xs">{{ post.created_at|timesince }} тому</span>
                 </div>
                 <button class="text-white/40 hover:text-white">...</button>
@@ -46,13 +52,28 @@
             </div>
 <!--    --------------------------------------------------------- КОМЕНТАРІ ДО ПОСТА ---------------------------------------------------------        -->
             <div class="mt-6 space-y-4 border-l-2 border-white/5 pl-4">
-            {% for comment in post.post_comments.all %}
-                {% if not comment.parent %}
-                    {% include 'posts/comment_thread.html' with comment=comment %}
-                {% endif %}
-            {% empty %}
+            {% if is_detail %}
+                {% for comment in post.post_comments.all %}
+                    {% if not comment.parent %}
+                        {% include 'posts/comment_thread.html' with comment=comment %}
+                    {% endif %}
+                    {% empty %}
                 <p class="text-[10px] text-white/20 italic">No toxic comments yet...</p>
-            {% endfor %}
+                {% endfor %}
+            {% else %}
+                {% with last_comment=post.get_last_main_comment %}
+                    {% if last_comment %}
+                        {% include 'posts/comment_thread.html' with comment=last_comment %}
+                        {% if post.post_comments.count > 1 %}
+                            <a href="{% url 'post_detail' post.id %}" class="text-[10px] text-white/30 hover:text-white transition-colors ml-11 mt-2 block">
+                                View all {{ post.post_comments.count }} comments...
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-[10px] text-white/20 italic"> No toxic comments yet...</p>
+                    {% endif %}
+                {% endwith %}
+            {% endif %}
             </div>
         </div>
     </div>
@@ -108,6 +129,8 @@
         </form>
     </div>
 </div>
+
+
 
 
 <script>

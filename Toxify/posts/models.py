@@ -44,6 +44,9 @@ class Post(models.Model):
             validate_size]
     )
 
+    def get_last_main_comment(self):
+        return self.post_comments.filter(parent__isnull=True).last()
+
 
 class Comment(models.Model):
     commentProfile = models.ForeignKey(
@@ -72,3 +75,5 @@ class Comment(models.Model):
             FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'webp']),
             validate_size]
     )
+
+

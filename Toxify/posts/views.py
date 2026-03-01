@@ -1,9 +1,10 @@
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
-from django.views.generic import ListView, TemplateView
+from django.views.generic import ListView, TemplateView, DetailView
 from django.db.models import Q
 
+from . import forms
 from .models import Post, Hashtag, Comment
 from profiles.models import Profile, User
 
@@ -51,11 +52,46 @@ class PostsListView(ListView):
     template_name = 'posts/index.html'
     context_object_name = 'posts'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_detail'] = False
+        return context
+
+
+class PostDetailView(DetailView):
+    model = Post
+    template_name = 'posts/post-detail.html'
+    context_object_name = 'post'
+    pk_url_kwarg = 'post_id'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_detail'] = True
+
+        # Отримуємо URL, з якого прийшов користувач
+        referer = self.request.META.get('HTTP_REFERER')
+
+        # Якщо реферер є і він веде на наш сайт (а не на Google, наприклад), передаємо його
+        if referer and self.request.get_host() in referer:
+            context['back_url'] = referer
+        else:
+            context['back_url'] = reverse('posts')  # Дефолт на головну
+
+        return context
+
 
 class PostCreateView(CreateView):
     model = Post
     fields = ['title', 'body', 'images']
     template_name = 'posts/post-create.html'
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        # Змінюємо кількість рядків (rows) та додаємо класи Tailwind
+        form.fields['body'].widget.attrs.update({
+            'rows': '2',
+        })
+        return form
 
     def dispatch(self, request, *args, **kwargs):
         self.userProfile = get_object_or_404(Profile, user__username=kwargs['username'])
