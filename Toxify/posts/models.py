@@ -14,7 +14,8 @@ def user_directory_post_path(instance, filename):
     return f'user_{instance.userProfile.user.username}/photo_posts/%Y/%m/%D/{filename}'
 
 def user_directory_comment_path(instance, filename):
-    return f'user_{instance.userProfile.user.username}/photo_comments/%Y/%m/%D/{filename}'
+    return f'user_{instance.commentProfile.user.username}/photo_comments/%Y/%m/%D/{filename}'
+
 
 
 class Hashtag(models.Model):
@@ -35,13 +36,12 @@ class Post(models.Model):
     hashtags = models.ManyToManyField(Hashtag, blank=True, related_name='posts')
     created_at = models.DateTimeField(auto_now_add=True)
     images = models.ImageField(
-        upload_to=user_directory_post_path,
-        null=True,
-        blank=True,
-        validators=[
+            upload_to=user_directory_post_path,
+            null=True,
+            blank=True,
+            validators=[
             FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'webp']),
-            validate_size
-        ]
+            validate_size]
     )
 
 
@@ -51,16 +51,24 @@ class Comment(models.Model):
         on_delete=models.CASCADE,
         related_name='comments'
     )
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
+    post_to = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='post_comments')
     title = models.CharField(max_length=100)
     body = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    images = models.ImageField(
-        upload_to=user_directory_comment_path,
+    # Нескінченні коментарі, поле для посилання на самого себе
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
-        validators=[
+        related_name='replies'
+    )
+
+    images = models.ImageField(
+            upload_to=user_directory_comment_path,
+            null=True,
+            blank=True,
+            validators=[
             FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'webp']),
-            validate_size
-        ]
+            validate_size]
     )

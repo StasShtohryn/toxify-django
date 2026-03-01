@@ -1,8 +1,9 @@
-from .views import PostsListView, PostCreateView, SearchView
+from .views import PostsListView, PostCreateView, SearchView, CommentCreateView
 from django.urls import path, include
 
 urlpatterns = [
     path('', PostsListView.as_view(), name='posts'),
     path('search/', SearchView.as_view(), name='search'),
     path('create/<str:username>/', PostCreateView.as_view(), name='post_create'),
+    path('post/<int:post_id>/comment/<str:username>/', CommentCreateView.as_view(), name='comment_create'),
 ]

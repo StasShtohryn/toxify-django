@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.views.generic import ListView, TemplateView
 from django.db.models import Q
 
-from .models import Post, Hashtag
+from .models import Post, Hashtag, Comment
 from profiles.models import Profile, User
 
 
@@ -81,4 +81,37 @@ class PostCreateView(CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['profile'] = self.userProfile
+        return context
+
+
+
+
+class CommentCreateView(CreateView):
+    model = Comment
+    fields = ['title', 'body', 'images']
+    template_name = 'posts/comment-create.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        self.commentProfile = get_object_or_404(Profile, user__username=kwargs['username'])
+        self.post_obj = get_object_or_404(Post, pk=kwargs['post_id'])
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.commentProfile = self.commentProfile
+        form.instance.post_to = self.post_obj
+
+        parent_id = self.request.POST.get('parent_id')
+        if parent_id:
+            form.instance.parent = Comment.objects.get(id=parent_id)
+
+        response = super().form_valid(form)
+
+        return response
+
+    def get_success_url(self):
+        return reverse('profile_detail', kwargs={'username': self.commentProfile.user.username})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['profile'] = self.commentProfile
         return context
