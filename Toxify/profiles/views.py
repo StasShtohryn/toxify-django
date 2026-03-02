@@ -9,8 +9,8 @@ from django.views.generic import DetailView, FormView
 
 from posts.models import Post
 from .forms import ProfileEditForm, RegisterForm, UsernameEditForm
-from .models import User, Profile, Repost
-
+from .models import User, Profile
+from utils.blobs import upload_to_vercel_blob
 
 # ── Реєстрація ────────────────────────────────────────────────────────────────
 
@@ -103,7 +103,12 @@ class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, View):
                 request.POST, request.FILES, instance=request.user.profile
             )
             if form.is_valid():
-                form.save()
+                profile = form.save(commit=False)
+                avatar_file = request.FILES.get('avatar')
+                if avatar_file:
+                    profile.avatar = upload_to_vercel_blob(avatar_file)
+
+                profile.save()
                 messages.success(request, "Профіль оновлено ✅")
                 return redirect("profile_detail", username=request.user.username)
             return self._render(request, form, UsernameEditForm(instance=request.user))

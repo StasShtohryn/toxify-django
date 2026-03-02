@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models import Count
 
+from utils.blobs import url
+
 class User(AbstractUser):
     pass
 
@@ -19,16 +21,15 @@ class Profile(models.Model):
         on_delete=models.CASCADE,
         related_name="profile",
     )
-    reposted_posts = models.ManyToManyField(
-        "posts.Post",
+    # reposted_posts = models.ManyToManyField(
+    #     "posts.Post",
+    #     blank=True,
+    #     through="Repost",
+    #     # related_name прибираємо — він вже є в Repost.post
+    # )
+    avatar = models.URLField(
         blank=True,
-        through="Repost",
-        # related_name прибираємо — він вже є в Repost.post
-    )
-    avatar = models.ImageField(
-        upload_to="avatars/",
-        blank=True,
-        default='avatars/default.jpg',
+        default=url,
         null=True,
         help_text="Фото профілю",
     )
@@ -127,18 +128,18 @@ class Profile(models.Model):
 
 
 
-class Repost(models.Model):
-    profile = models.ForeignKey(
-        Profile,
-        on_delete=models.CASCADE,
-        related_name="reposts",
-    )
-    post = models.ForeignKey(
-        "posts.Post",
-        on_delete=models.CASCADE,
-        related_name="reposted_by",
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
+# class Repost(models.Model):
+#     profile = models.ForeignKey(
+#         Profile,
+#         on_delete=models.CASCADE,
+#         related_name="reposts",
+#     )
+#     post = models.ForeignKey(
+#         "posts.Post",
+#         on_delete=models.CASCADE,
+#         related_name="reposted_by",
+#     )
+#     created_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        unique_together = ("profile", "post")
+#     class Meta:
+#         unique_together = ("profile", "post")

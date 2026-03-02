@@ -1,20 +1,20 @@
 <div class="flex gap-3 items-start mb-4">
     <div class="w-8 h-8 shrink-0 overflow-hidden border border-white/10">
         {% if comment.commentProfile.avatar %}
-            <img src="{{ comment.commentProfile.avatar.url }}" class="w-full h-full object-cover">
+            <img src="{{ comment.commentProfile.avatar }}" class="w-full h-full object-cover">
         {% endif %}
     </div>
 
     <div class="flex-1 min-w-0">
         <div class="flex items-center gap-2 mb-0.5">
-            <span class="font-bold text-xs">{{ comment.commentProfile.user.username }}</span>
+            <a href="{% url 'profile_detail' comment.commentProfile.user.username %}" class="font-bold text-xs hover:underline">{{ comment.commentProfile.user.username }}</a>
             <span class="text-[10px] text-white/30">{{ comment.created_at|timesince }} ago</span>
         </div>
         <p class="text-xs text-white/80 leading-snug mt-2 mb-2">{{ comment.body }}</p>
 
         {% if comment.images %}
             <div class="mb-4 rounded-lg overflow-hidden border border-white/10">
-                <img src="{{ comment.images.url }}" alt="Post image" class="w-full h-auto object-cover max-h-[500px]">
+                <img src="{{ comment.images }}" alt="Post image" class="w-full h-auto object-cover max-h-[500px]">
             </div>
         {% endif %}
 

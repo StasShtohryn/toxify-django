@@ -99,6 +99,10 @@ class PostCreateView(CreateView):
 
     def form_valid(self, form):
         form.instance.userProfile = self.userProfile
+        image_file = self.request.FILES.get('images')
+        if image_file:
+            from utils.blobs import upload_to_vercel_blob
+            form.instance.images = upload_to_vercel_blob(image_file)
 
         response = super().form_valid(form)
 
@@ -140,9 +144,12 @@ class CommentCreateView(CreateView):
         if parent_id:
             form.instance.parent = Comment.objects.get(id=parent_id)
 
-        response = super().form_valid(form)
+        image_file = self.request.FILES.get('images')
+        if image_file:
+            from utils.blobs import upload_to_vercel_blob
+            form.instance.images = upload_to_vercel_blob(image_file)
 
-        return response
+        return super().form_valid(form)
 
     def get_success_url(self):
         return reverse('profile_detail', kwargs={'username': self.commentProfile.user.username})
