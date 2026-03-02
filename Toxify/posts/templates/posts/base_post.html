@@ -58,7 +58,7 @@
                         {% include 'posts/comment_thread.html' with comment=comment %}
                     {% endif %}
                     {% empty %}
-                <p class="text-[10px] text-white/20 italic">No toxic comments yet...</p>
+                <p class="text-[10px] text-white/20 italic"> No toxic comments yet... </p>
                 {% endfor %}
             {% else %}
                 {% with last_comment=post.get_last_main_comment %}
