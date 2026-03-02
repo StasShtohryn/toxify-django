@@ -110,15 +110,15 @@ class Profile(models.Model):
         Викликати після кожного репорту / лайку.
         """
         score = self.reputation_score
-        if score >= 50:
+        if score >= 20:
             level = 0
-        elif score >= 10:
+        elif score >= 5:
             level = 1
         elif score >= 0:
             level = 2
-        elif score >= -20:
+        elif score >= -10:
             level = 3
-        elif score >= -50:
+        elif score >= -20:
             level = 4
         else:
             level = 5
