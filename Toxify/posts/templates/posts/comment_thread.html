@@ -38,7 +38,6 @@
                         {{ comment.replies.count }}
                     {% endif %}
                 </span>
-                <span class="text-[10px]">Reply</span>
             </button>
             <!--                 КНОПКА РЕПОСТ                         -->
             <button class="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer">
@@ -50,13 +49,13 @@
         {% if comment.replies.exists %}
             <div class="mt-4 space-y-4 border-l border-white/10 pl-4">
                 {% if is_detail %}
-                    {% for reply in comment.replies.all|slice:":3" %}
+                    {% for reply in comment.replies.all|dictsortreversed:"created_at"|slice:":3" %}
                         {% include 'posts/comment_thread.html' with comment=reply %}
                     {% endfor %}
 
                     {% if comment.replies.count > 3 %}
                         <div id="extra-replies-{{ comment.id }}" class="hidden space-y-4 mt-4">
-                            {% for reply in comment.replies.all|slice:"3:" %}
+                            {% for reply in comment.replies.all|dictsortreversed:"created_at"|slice:"3:" %}
                                 {% include 'posts/comment_thread.html' with comment=reply %}
                             {% endfor %}
                         </div>
