@@ -39,6 +39,9 @@ class ProfileEditForm(forms.ModelForm):
         model = Profile
         fields = ('name', "avatar", "bio", 'tag')
         widgets = {
+            'avatar': forms.FileInput(
+
+            ),
             'name': forms.TextInput(
                 attrs={
                     'placeholder': 'Введіть ваше ім\'я '
@@ -63,16 +66,16 @@ class ProfileEditForm(forms.ModelForm):
             raise forms.ValidationError("Біо не може перевищувати 300 символів.")
         return bio
 
-    def clean_avatar(self):
-        avatar = self.cleaned_data.get("avatar")
-        if avatar:
-            # Максимум 2 МБ
-            if avatar.size > 2 * 1024 * 1024:
-                raise forms.ValidationError("Розмір аватара не може перевищувати 2 МБ.")
-            allowed = ("image/jpeg", "image/png", "image/webp", "image/gif")
-            if hasattr(avatar, "content_type") and avatar.content_type not in allowed:
-                raise forms.ValidationError("Дозволені формати: JPEG, PNG, WebP, GIF.")
-        return avatar
+    # def clean_avatar(self):
+    #     avatar = self.cleaned_data.get("avatar")
+    #     if avatar:
+    #         # Максимум 2 МБ
+    #         if avatar.size > 2 * 1024 * 1024:
+    #             raise forms.ValidationError("Розмір аватара не може перевищувати 2 МБ.")
+    #         allowed = ("image/jpeg", "image/png", "image/webp", "image/gif")
+    #         if hasattr(avatar, "content_type") and avatar.content_type not in allowed:
+    #             raise forms.ValidationError("Дозволені формати: JPEG, PNG, WebP, GIF.")
+    #     return avatar
 
 
 class UsernameEditForm(forms.ModelForm):

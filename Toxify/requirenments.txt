@@ -3,3 +3,7 @@ python-dotenv
 django-split-settings
 pillow
 django-widget-tweaks
+django-widget-tweaks
+python-decouple
+psycopg2-binary
+requests

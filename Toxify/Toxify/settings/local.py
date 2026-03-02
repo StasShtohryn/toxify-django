@@ -15,6 +15,8 @@ ALLOWED_HOSTS = ['*']
 #     }
 # }
 
+VERCEL_BLOB_TOKEN = os.getenv("VERCEL_BLOB_TOKEN")
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',

@@ -35,14 +35,7 @@ class Post(models.Model):
     body = models.TextField(null=True, blank=True)
     hashtags = models.ManyToManyField(Hashtag, blank=True, related_name='posts')
     created_at = models.DateTimeField(auto_now_add=True)
-    images = models.ImageField(
-            upload_to=user_directory_post_path,
-            null=True,
-            blank=True,
-            validators=[
-            FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'webp']),
-            validate_size]
-    )
+    images = models.URLField(max_length=500, null=True, blank=True)
 
     def get_last_main_comment(self):
         return self.post_comments.filter(parent__isnull=True).last()
@@ -67,13 +60,6 @@ class Comment(models.Model):
         related_name='replies'
     )
 
-    images = models.ImageField(
-            upload_to=user_directory_comment_path,
-            null=True,
-            blank=True,
-            validators=[
-            FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'webp']),
-            validate_size]
-    )
 
+    images = models.URLField(null=True, blank=True)
 
