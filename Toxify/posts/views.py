@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
@@ -55,6 +56,7 @@ class PostsListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['is_detail'] = False
+        print(context)
         return context
 
 
@@ -80,10 +82,11 @@ class PostDetailView(DetailView):
         return context
 
 
-class PostCreateView(CreateView):
+class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     fields = ['title', 'body', 'images']
     template_name = 'posts/post-create.html'
+
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)

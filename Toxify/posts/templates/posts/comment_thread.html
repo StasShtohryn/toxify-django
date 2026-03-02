@@ -47,12 +47,47 @@
             </button>
         </div>
 <!--    --------------------------------------------------------- УСІ ВІДПОВІДІ  ---------------------------------------------------------        -->
-        {% if comment.replies.all %}
+        {% if comment.replies.exists %}
             <div class="mt-4 space-y-4 border-l border-white/10 pl-4">
-                {% for reply in comment.replies.all %}
-                    {% include 'posts/comment_thread.html' with comment=reply %}
-                {% endfor %}
+                {% if is_detail %}
+                    {% for reply in comment.replies.all|slice:":3" %}
+                        {% include 'posts/comment_thread.html' with comment=reply %}
+                    {% endfor %}
+
+                    {% if comment.replies.count > 3 %}
+                        <div id="extra-replies-{{ comment.id }}" class="hidden space-y-4 mt-4">
+                            {% for reply in comment.replies.all|slice:"3:" %}
+                                {% include 'posts/comment_thread.html' with comment=reply %}
+                            {% endfor %}
+                        </div>
+
+                        <button
+                            onclick="toggleReplies('{{ comment.id }}', this)"
+                            class="text-[10px] text-white/30 hover:text-white transition-colors mt-2 block cursor-pointer uppercase font-bold tracking-wider"
+                        >
+                            View all {{ comment.replies.count }} replies
+                        </button>
+                    {% endif %}
+                {% endif %}
             </div>
         {% endif %}
     </div>
 </div>
+
+
+<script>
+function toggleReplies(commentId, btn) {
+    const extraDiv = document.getElementById('extra-replies-' + commentId);
+    if (extraDiv) {
+        const isHidden = extraDiv.classList.contains('hidden');
+
+        if (isHidden) {
+            extraDiv.classList.remove('hidden');
+            btn.innerText = 'Hide replies';
+        } else {
+            extraDiv.classList.add('hidden');
+            btn.innerText = 'View all replies';
+        }
+    }
+}
+</script>
