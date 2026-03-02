@@ -13,6 +13,7 @@ class Profile(models.Model):
     """
 
     # ── Базові поля ──────────────────────────────────────────────────────────
+    name = models.CharField(max_length=50)
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
@@ -36,6 +37,11 @@ class Profile(models.Model):
         blank=True,
         default="",
         help_text="Розкажи про себе (або не розказуй — це Toxify)",
+    )
+    tag = models.CharField(
+        max_length=30,
+        blank=True,
+        default='',
     )
 
     # ── Підписки ─────────────────────────────────────────────────────────────
