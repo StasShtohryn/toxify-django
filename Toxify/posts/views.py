@@ -119,7 +119,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         return response
 
     def get_success_url(self):
-        return reverse('profile_detail', kwargs={'username': self.userProfile.user.username})
+        return reverse('post_detail', kwargs={'post_id': self.object.pk}) + '?new=true'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -129,7 +129,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 
 
 
-class CommentCreateView(CreateView):
+class CommentCreateView(LoginRequiredMixin, CreateView):
     model = Comment
     fields = ['title', 'body', 'images']
     template_name = 'posts/comment-create.html'
@@ -155,7 +155,7 @@ class CommentCreateView(CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse('profile_detail', kwargs={'username': self.commentProfile.user.username})
+        return reverse('post_detail', kwargs={'post_id': self.object.post_to.pk})
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

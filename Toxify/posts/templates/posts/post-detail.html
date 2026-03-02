@@ -4,7 +4,9 @@
 
 {% block content %}
 <div class="max-w-2xl mx-auto ml-4 mt-4">
-    <a href="{{ back_url }}" class="inline-flex items-center gap-2 text-white/40 hover:text-white transition-colors group">
+    <a href="{{ back_url }}" class="inline-flex items-center gap-2 text-white/40 hover:text-white transition-colors group"
+        onclick="const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('new')) { window.history.go(-2); return false; }">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>
         </svg>
@@ -15,3 +17,4 @@
     {% include 'posts/base_post.html' with post=post %}
 </div>
 {% endblock %}
+
