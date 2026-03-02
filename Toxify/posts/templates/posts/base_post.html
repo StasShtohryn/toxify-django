@@ -2,7 +2,7 @@
     <div class="border-b border-white/10 p-4 hover:bg-white/[0.02] transition-colors flex gap-3">
         <div class="flex flex-col items-center gap-2">
             <img src="{{post.userProfile.avatar.url}}" alt="profile pic" class="w-10 h-10 border border-white/20 object-cover">
-            <div class="w-[2px] h-full bg-white/10"></div>
+            <!-- <div class="w-[2px] h-full bg-white/10"></div> -->
         </div>
 <!--        ==================================================== ПОЧАТОК ЛОГІКИ ПОСТА ====================================================-->
         <div class="flex-1">
@@ -15,7 +15,7 @@
                     {% else %}
                         <span class="font-bold text-sm text-white/20">Unknown User</span>
                     {% endif %}
-                    <span class="text-white/40 text-xs">{{ post.created_at|timesince }} тому</span>
+                    <span class="text-white/40 text-xs">{{ post.created_at|timesince }} ago</span>
                 </div>
                 <button class="text-white/40 hover:text-white">...</button>
             </div>
@@ -51,7 +51,7 @@
                 </button>
             </div>
 <!--    --------------------------------------------------------- КОМЕНТАРІ ДО ПОСТА ---------------------------------------------------------        -->
-            <div class="mt-6 space-y-4 border-l-2 border-white/5 pl-4">
+            <div class="mt-6 space-y-4 border-l border-white/10 pl-4">
             {% if is_detail %}
                 {% for comment in post.post_comments.all %}
                     {% if not comment.parent %}

@@ -12,11 +12,12 @@ class LoginForm(AuthenticationForm):
 class RegisterForm(UserCreationForm):
     """Реєстрація: username + email + пароль."""
 
+    name = forms.CharField(required=True, label='Name')
     email = forms.EmailField(required=True, label="Email")
 
     class Meta:
         model = User
-        fields = ("username", "email", "password1", "password2")
+        fields = ('name', "username", "email", "password1", "password2")
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -25,7 +26,9 @@ class RegisterForm(UserCreationForm):
             user.save()
             # Профіль створюється автоматично через сигнал (див. нижче),
             # але про всяк випадок — get_or_create
-            Profile.objects.get_or_create(user=user)
+            profile, created = Profile.objects.get_or_create(user=user)
+            profile.name = self.cleaned_data['name']
+            profile.save()
         return user
 
 
@@ -34,14 +37,24 @@ class ProfileEditForm(forms.ModelForm):
 
     class Meta:
         model = Profile
-        fields = ("avatar", "bio")
+        fields = ('name', "avatar", "bio", 'tag')
         widgets = {
+            'name': forms.TextInput(
+                attrs={
+                    'placeholder': 'Введіть ваше ім\'я '
+                }
+            ),
             "bio": forms.Textarea(
                 attrs={
                     "rows": 4,
                     "placeholder": "Розкажи щось токсичне про себе...",
                 }
             ),
+            'tag': forms.TextInput(
+                attrs={
+                    'placeholder': 'Твій статус...'
+                }
+            )
         }
 
     def clean_bio(self):
