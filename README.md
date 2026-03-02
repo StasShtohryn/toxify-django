@@ -43,10 +43,21 @@ Python-Dotenv:
 pip install python-dotenv
 ```
 
+Python-Decouple:
+```console
+pip install python-decouple psycopg2-binary
+```
+
 ## Configuration
 
 Create ```.env``` file next to ```manage.py``` in ```Toxify/``` folder with the following variables:
 ```env
 DEBUG=True
 SECRET_KEY='YOUR_DJANGO_SECRET_KEY'
+
+DB_NAME=YOUR_DB_NAME
+DB_USER=YOUR_DB_USER
+DB_PASSWORD=YOUR_DB_PASSWORD
+DB_HOST=YOUR_DB_HOST
+DB_PORT=YOUR_DB_PORT
 ```
