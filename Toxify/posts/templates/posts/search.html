@@ -35,7 +35,7 @@
             {% for profile in profiles %}
                 <a href="{% url 'profile_detail' profile.user.username %}" class="flex items-center gap-3 p-3 hover:bg-white/[0.03] transition-colors border-b border-white/10">
                     <img
-                        src="{% if profile.avatar %}{{ profile.avatar.url }}{% endif %}"
+                        src="{% if profile.avatar %}{{ profile.avatar }}{% endif %}"
                         alt=""
                         class="w-10 h-10 border border-white/20 object-cover bg-white/5"
                     />
@@ -56,7 +56,7 @@
                 <div class="border-b border-white/10 p-4 hover:bg-white/[0.02] transition-colors flex gap-3">
                     <a href="{% url 'profile_detail' post.userProfile.user.username %}" class="shrink-0">
                         <img
-                            src="{% if post.userProfile.avatar %}{{ post.userProfile.avatar.url }}{% endif %}"
+                            src="{% if post.userProfile.avatar %}{{ post.userProfile.avatar }}{% endif %}"
                             alt=""
                             class="w-10 h-10 border border-white/20 object-cover bg-white/5"
                         />

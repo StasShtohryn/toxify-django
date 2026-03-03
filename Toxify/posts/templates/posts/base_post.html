@@ -49,31 +49,12 @@
             </div>
         <!--    --------------------------------------------------------- ВМІСТ ПОСТА ---------------------------------------------------------        -->
             {% if post.title %}
-                <h2 class="text-base font-black uppercase tracking-tight mb-1 text-white">
+                <h2 class="text-base font-black uppercase tracking-tight mb-1 text-white/70">
                     {{ post.title }}
                 </h2>
             {% endif %}
 
-            {% if post.hashtags.all %}
-                <div class="flex flex-wrap gap-2 mb-4">
-                    {% for tag in post.hashtags.all %}
-                        {% if is_detail or forloop.counter <= 3 %}
-                            <a href="{% url 'search' %}?q=%23{{ tag.name }}"
-                               class="text-[10px] font-bold text-white/40 bg-white/5 px-2 py-0.5 border border-white/10 hover:border-white/60 hover:text-white transition-colors cursor-pointer">
-                                #{{ tag.name }}
-                            </a>
-                        {% endif %}
-
-                        {% if not is_detail and forloop.counter == 3 and post.hashtags.count > 3 %}
-                            <span class="text-[10px] text-white/20 self-center">
-                                +{{ post.hashtags.count|add:"-3" }}
-                            </span>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            {% endif %}
-
-            <p class="text-sm leading-relaxed mb-4 text-white/90">
+            <p class="text-sm leading-relaxed mb-4 text-white/55">
                 {{post.body}}
             </p>
 
@@ -130,8 +111,26 @@
                     <span class="text-xs">5</span>
                 </button>
             </div>
+            {% if post.hashtags.all %}
+            <div class="flex flex-wrap gap-2 mt-2">
+                {% for tag in post.hashtags.all %}
+                    {% if is_detail or forloop.counter <= 3 %}
+                        <a href="{% url 'search' %}?q=%23{{ tag.name }}"
+                           class="text-[10px] font-bold text-white/40 bg-white/5 px-2 py-0.5 border border-white/10 hover:border-white/60 hover:text-white transition-colors cursor-pointer">
+                            #{{ tag.name }}
+                        </a>
+                    {% endif %}
+
+                    {% if not is_detail and forloop.counter == 3 and post.hashtags.count > 3 %}
+                        <span class="text-[10px] text-white/20 self-center">
+                            +{{ post.hashtags.count|add:"-3" }}
+                        </span>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
 <!--    --------------------------------------------------------- КОМЕНТАРІ ДО ПОСТА ---------------------------------------------------------        -->
-            <div class="mt-6 space-y-4 border-l border-white/10 pl-4">
+            <div class="mt-2 space-y-4 border-l border-white/10 pl-4">
             {% if is_detail %}
                 {% for comment in post.post_comments.all|dictsortreversed:"created_at" %}
                     {% if not comment.parent %}
