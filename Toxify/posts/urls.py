@@ -1,3 +1,4 @@
+from . import views
 from .views import PostsListView, PostCreateView, SearchView, CommentCreateView, PostDetailView
 from django.urls import path, include
 
@@ -7,4 +8,5 @@ urlpatterns = [
     path('create/<str:username>/', PostCreateView.as_view(), name='post_create'),
     path('post/<int:post_id>', PostDetailView.as_view(), name='post_detail'),
     path('post/<int:post_id>/comment/<str:username>/', CommentCreateView.as_view(), name='comment_create'),
+    path('post/<int:post_id>/report/', views.report_post, name='report_post'),
 ]

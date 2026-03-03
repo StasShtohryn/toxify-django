@@ -1,5 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic import ListView, TemplateView, DetailView
@@ -161,3 +162,28 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
         context = super().get_context_data(**kwargs)
         context['profile'] = self.commentProfile
         return context
+
+
+@login_required
+def report_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    author_profile = post.userProfile
+
+    author_profile.reputation_score -= 1
+
+    rep = author_profile.reputation_score
+    if rep >= 50:
+        author_profile.toxicity_level = 0
+    elif rep >= 10:
+        author_profile.toxicity_level = 1
+    elif rep >= 0:
+        author_profile.toxicity_level = 2
+    elif rep >= -20:
+        author_profile.toxicity_level = 3
+    elif rep >= -50:
+        author_profile.toxicity_level = 4
+    else:
+        author_profile.toxicity_level = 5
+    author_profile.save()
+
+    return redirect(request.META.get('HTTP_REFERER', '/'))
