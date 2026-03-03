@@ -98,11 +98,7 @@
                 <button class="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer">
                     <a href="{% if not user.is_authenticated %}{% url 'login' %}{% else %}javascript:void(0){% endif %}" id="openCreateCommentModal{{ post.id }}" class="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle-icon lucide-message-circle transition-transform hover:scale-110"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></svg>
-                        <span class="text-xs">
-                            {% if post.post_comments.exists  %}
-                                {{ post.post_comments.count }}
-                            {% endif %}
-                        </span>
+                        <span class="text-xs">{{ post.post_comments.count }}</span>
                     </a>
                 </button>
                 <!--                 КНОПКА РЕПОСТ                         -->
