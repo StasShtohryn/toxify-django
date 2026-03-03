@@ -41,6 +41,24 @@ class Post(models.Model):
         return self.post_comments.filter(parent__isnull=True).last()
 
 
+class PostLike(models.Model):
+    """Лайк поста. Один юзер — один лайк на пост."""
+    profile = models.ForeignKey(
+        "profiles.Profile",
+        on_delete=models.CASCADE,
+        related_name='post_likes'
+    )
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name='post_likes'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('profile', 'post')
+
+
 class Comment(models.Model):
     commentProfile = models.ForeignKey(
         "profiles.Profile",  # ← рядок замість імпорту

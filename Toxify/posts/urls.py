@@ -1,5 +1,5 @@
 from . import views
-from .views import PostsListView, PostCreateView, SearchView, CommentCreateView, PostDetailView
+from .views import PostsListView, PostCreateView, SearchView, CommentCreateView, PostDetailView, LikePostToggleView
 from django.urls import path, include
 
 urlpatterns = [
@@ -9,4 +9,5 @@ urlpatterns = [
     path('post/<int:post_id>', PostDetailView.as_view(), name='post_detail'),
     path('post/<int:post_id>/comment/<str:username>/', CommentCreateView.as_view(), name='comment_create'),
     path('post/<int:post_id>/report/', views.report_post, name='report_post'),
+    path('post/<int:post_id>/like/', LikePostToggleView.as_view(), name='like_post_toggle'),
 ]

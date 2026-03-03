@@ -4,10 +4,11 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic import ListView, TemplateView, DetailView
+from django.views import View
 from django.db.models import Q
 
 from . import forms
-from .models import Post, Hashtag, Comment
+from .models import Post, Hashtag, Comment, PostLike
 from profiles.models import Profile, User
 
 
@@ -29,6 +30,7 @@ class SearchView(TemplateView):
             context['posts'] = Post.objects.filter(
                 hashtags__name__icontains=tag_name
             ).select_related('userProfile__user').distinct().order_by('-created_at')[:30]
+            _add_liked_to_posts(self.request, context['posts'])
             context['search_type'] = 'hashtag'
 
         elif query.startswith('@'):
@@ -42,12 +44,30 @@ class SearchView(TemplateView):
             context['posts'] = Post.objects.filter(
                 Q(title__icontains=query) | Q(body__icontains=query) | Q(hashtags__name__icontains=query)
             ).select_related('userProfile__user').distinct().order_by('-created_at')[:30]
+            _add_liked_to_posts(self.request, context['posts'])
 
             context['profiles'] = Profile.objects.filter(
                 Q(user__username__icontains=query) | Q(bio__icontains=query)
             ).select_related('user').order_by('-created_at')[:20]
 
         return context
+
+def _add_liked_to_posts(request, posts):
+    """Додає post.user_has_liked для кожного поста."""
+    post_list = list(posts) if hasattr(posts, '__iter__') and not isinstance(posts, (str, dict)) else [posts]
+    if not post_list:
+        return
+    if request.user.is_authenticated:
+        liked_ids = set(PostLike.objects.filter(
+            profile=request.user.profile,
+            post_id__in=[p.id for p in post_list]
+        ).values_list('post_id', flat=True))
+        for post in post_list:
+            post.user_has_liked = post.id in liked_ids
+    else:
+        for post in post_list:
+            post.user_has_liked = False
+
 
 class PostsListView(ListView):
     model = Post
@@ -57,7 +77,7 @@ class PostsListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['is_detail'] = False
-        print(context)
+        _add_liked_to_posts(self.request, context.get('posts', []))
         return context
 
 
@@ -70,6 +90,7 @@ class PostDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['is_detail'] = True
+        _add_liked_to_posts(self.request, [context['post']])
 
         # Отримуємо URL, з якого прийшов користувач
         referer = self.request.META.get('HTTP_REFERER')
@@ -187,3 +208,22 @@ def report_post(request, post_id):
     author_profile.save()
 
     return redirect(request.META.get('HTTP_REFERER', '/'))
+
+
+class LikePostToggleView(LoginRequiredMixin, View):
+    """POST: поставити або зняти лайк з поста."""
+    login_url = '/profile/login/'
+
+    def post(self, request, post_id):
+        post = get_object_or_404(Post, pk=post_id)
+        profile = request.user.profile
+
+        like, created = PostLike.objects.get_or_create(profile=profile, post=post)
+        if not created:
+            like.delete()
+            liked = False
+        else:
+            liked = True
+
+        redirect_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or reverse('posts')
+        return redirect(redirect_url)

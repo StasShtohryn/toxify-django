@@ -8,6 +8,7 @@ from django.views import View
 from django.views.generic import DetailView, FormView
 
 from posts.models import Post
+from posts.views import _add_liked_to_posts
 from .forms import ProfileEditForm, RegisterForm, UsernameEditForm
 from .models import User, Profile
 from utils.blobs import upload_to_vercel_blob
@@ -62,7 +63,9 @@ class ProfileDetailView(DetailView):
             and self.request.user != profile.user
             and self.request.user.profile.is_following(profile)
         )
-        context["posts"] = profile.posts.order_by("-created_at")[:20]
+        posts = profile.posts.order_by("-created_at")[:20]
+        _add_liked_to_posts(self.request, posts)
+        context["posts"] = posts
         return context
 
 
