@@ -63,7 +63,7 @@ class ProfileDetailView(DetailView):
             and self.request.user != profile.user
             and self.request.user.profile.is_following(profile)
         )
-        posts = profile.posts.order_by("-created_at")[:20]
+        posts = list(profile.posts.order_by("-created_at")[:20])
         _add_liked_to_posts(self.request, posts)
         context["posts"] = posts
         return context

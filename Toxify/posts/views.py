@@ -73,11 +73,14 @@ class PostsListView(ListView):
     model = Post
     template_name = 'posts/index.html'
     context_object_name = 'posts'
+    ordering = ['-created_at']
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['is_detail'] = False
-        _add_liked_to_posts(self.request, context.get('posts', []))
+        posts = list(context.get('posts', []))
+        _add_liked_to_posts(self.request, posts)
+        context['posts'] = posts
         return context
 
 

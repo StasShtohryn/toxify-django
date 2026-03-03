@@ -92,7 +92,7 @@
         <h2 class="text-center uppercase mt-2">no posts</h2>
 
       {% else %}
-        {% for post in profile.posts.all|dictsortreversed:"created_at"%}
+        {% for post in posts %}
           {% include 'posts/base_post.html' with post=post %}
         {% endfor %}
       {% endif %}
