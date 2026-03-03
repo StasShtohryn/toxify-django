@@ -19,7 +19,10 @@
 <body>
     <div class="min-h-screen bg-black flex flex-col max-w-2xl mx-auto border-x border-white/10 relative">
         <header class="sticky top-0 z-50 backdrop-blur-md bg-black/80 border-b border-white/10 h-16 flex items-center justify-center">
-            <div class="text-xl font-bold tracking-tighter"><a href="{% url 'posts' %}">TOXIFY</a></div>
+            <div class="flex items-center gap-2">
+                <a href="{% url 'posts' %}" class="text-xl font-bold tracking-tighter">TOXIFY</a>
+                <a href="{% url 'about_us' %}"><img src="{% static 'main/images/logo.png' %}" alt="Toxify" class="h-10"></a>
+            </div>
         </header>
         <main class="flex-1 pb-20">
             {% block content %}

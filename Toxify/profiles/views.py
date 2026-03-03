@@ -9,7 +9,7 @@ from django.views.generic import DetailView, FormView
 
 from posts.models import Post
 from .forms import ProfileEditForm, RegisterForm, UsernameEditForm
-from .models import User, Profile, Repost
+from .models import User, Profile
 from utils.blobs import upload_to_vercel_blob
 
 # ── Реєстрація ────────────────────────────────────────────────────────────────
