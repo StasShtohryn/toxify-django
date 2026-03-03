@@ -20,12 +20,12 @@ class Profile(models.Model):
         on_delete=models.CASCADE,
         related_name="profile",
     )
-    reposted_posts = models.ManyToManyField(
-        "posts.Post",
-        blank=True,
-        through="Repost",
-        # related_name прибираємо — він вже є в Repost.post
-    )
+    # reposted_posts = models.ManyToManyField(
+    #     "posts.Post",
+    #     blank=True,
+    #     through="Repost",
+    #     # related_name прибираємо — він вже є в Repost.post
+    # )
     avatar = models.URLField(
         blank=True,
         default=f'{url}avatars/default.jpg',
@@ -127,18 +127,18 @@ class Profile(models.Model):
 
 
 
-class Repost(models.Model):
-    profile = models.ForeignKey(
-        Profile,
-        on_delete=models.CASCADE,
-        related_name="reposts",
-    )
-    post = models.ForeignKey(
-        "posts.Post",
-        on_delete=models.CASCADE,
-        related_name="reposted_by",
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ("profile", "post")
+# class Repost(models.Model):
+#     profile = models.ForeignKey(
+#         Profile,
+#         on_delete=models.CASCADE,
+#         related_name="reposts",
+#     )
+#     post = models.ForeignKey(
+#         "posts.Post",
+#         on_delete=models.CASCADE,
+#         related_name="reposted_by",
+#     )
+#     created_at = models.DateTimeField(auto_now_add=True)
+#
+#     class Meta:
+#         unique_together = ("profile", "post")
