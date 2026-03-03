@@ -59,7 +59,7 @@
                     <div class="flex gap-4">
                         <div class="w-10 h-10 border border-white/20 bg-white/5 shrink-0 overflow-hidden">
                             {% if request.user.profile.avatar %}
-                                <img src="{{ request.user.profile.avatar.url }}" alt="user" class="w-full h-full object-cover"/>
+                                <img src="{{ request.user.profile.avatar }}" alt="user" class="w-full h-full object-cover"/>
                             {% endif %}
                         </div>
 

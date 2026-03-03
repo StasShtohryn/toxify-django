@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models import Count
+from utils.blobs import url
 
 class User(AbstractUser):
     pass
@@ -25,10 +26,9 @@ class Profile(models.Model):
         through="Repost",
         # related_name прибираємо — він вже є в Repost.post
     )
-    avatar = models.ImageField(
-        upload_to="avatars/",
+    avatar = models.URLField(
         blank=True,
-        default='avatars/default.jpg',
+        default=f'{url}avatars/default.jpg',
         null=True,
         help_text="Фото профілю",
     )
