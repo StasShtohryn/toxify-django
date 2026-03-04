@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="max-w-xl mx-auto p-4">
-    <h1 class="text-xl font-black uppercase italic mb-6 tracking-tighter">Activity Log</h1>
+    <h1 class="text-xl font-black uppercase mb-6 tracking-tighter">Activity Log</h1>
 
     {% if user.is_authenticated %}
         <div class="space-y-3">
@@ -17,11 +17,7 @@
                     {% endif %}" >
 
                     <div class="shrink-0">
-                        {% if note.sender.userProfile.avatar %}
-                            <img src="{{ notе.sender.userProfile.avatar }}" alt="avatar" class="w-10 h-10 border border-white/20 object-cover">
-                        {% else %}
-                            <div class="w-10 h-10 bg-white/10 flex items-center justify-center text-[10px]">NO PIC</div>
-                        {% endif %}
+                        <img src="{{ note.sender.profile.avatar }}" alt="avatar" class="w-10 h-10 border border-white/20 object-cover">
                     </div>
 
                     <div class="flex-1">
