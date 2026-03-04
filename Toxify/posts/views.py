@@ -132,7 +132,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         image_file = self.request.FILES.get('images')
         if image_file:
             from utils.blobs import upload_to_vercel_blob
-            form.instance.images = upload_to_vercel_blob(image_file)
+            form.instance.images = upload_to_vercel_blob(image_file, folder="posts")
 
         response = super().form_valid(form)
 
@@ -185,7 +185,7 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
         image_file = self.request.FILES.get('images')
         if image_file:
             from utils.blobs import upload_to_vercel_blob
-            form.instance.images = upload_to_vercel_blob(image_file)
+            form.instance.images = upload_to_vercel_blob(image_file, folder="comments")
 
         return super().form_valid(form)
 
