@@ -3,22 +3,25 @@ import os
 
 url = "https://ogulkughunqoppwg.public.blob.vercel-storage.com/"
 
-def upload_to_vercel_blob(file):
+
+def upload_to_vercel_blob(file, folder: str = "misc") -> str:
+    """
+    folder — підпапка в Vercel Blob: 'avatars', 'posts', 'comments'
+    """
     token = os.getenv("VERCEL_BLOB_TOKEN")
     filename = file.name
 
-    url = f"https://blob.vercel-storage.com/{filename}"
+    # Структура: posts/filename.jpg, avatars/filename.jpg
+    path = f"{folder}/{filename}"
+
+    url = f"https://blob.vercel-storage.com/{path}"
 
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": file.content_type,
     }
 
-    response = requests.put(
-        url,
-        headers=headers,
-        data=file.read(),
-    )
+    response = requests.put(url, headers=headers, data=file.read())
 
     if response.status_code not in (200, 201):
         raise Exception(f"Upload failed: {response.text}")
