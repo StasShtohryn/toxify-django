@@ -28,7 +28,7 @@
                                 {% else %}
                                     <span class="font-bold text-green-400"><strong>SYSTEM</strong></span>
                                 {% endif %}
-                                {{ note.message }}
+                                {{ note.message|linebreaksbr }}
                             </p>
                             {% if not note.is_read %}
                                 <span class="text-[8px] bg-red-500 text-white px-1.5 py-0.5 font-black uppercase tracking-tighter">NEW</span>

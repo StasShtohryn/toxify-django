@@ -22,7 +22,7 @@
             <!--    --------------------------------------------------------- КНОПКИ ДЛЯ ДІЙ З ПОСТАМИ ---------------------------------------------------------        -->
                 <div class="relative">
                     <button onclick="togglePostMenu(event, '{{ post.id }}')"
-                            class="text-white/20 hover:text-white transition-colors p-1 post-menu-button">
+                            class="text-white/20 hover:text-white transition-colors p-1 post-menu-button cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
                     </button>
 
@@ -39,11 +39,11 @@
                                 Share
                             </button>
                             {% if post.userProfile.user != user %}
-                                <a href="{% url 'report_post' post.id %}"
+                                <button onclick="openReportModal('{{ post.id }}', '{{ post.title|escapejs }}')"
                                    class="flex items-center gap-3 px-3 py-2 text-[10px] text-red-500/50 hover:bg-red-500/5 hover:text-red-500 transition-colors uppercase font-bold text-left">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/></svg>
                                     Report
-                                </a>
+                                </button>
                             {% endif %}
                         </div>
                     </div>
@@ -82,7 +82,7 @@
                             {% endif %}
                         </button>
                     </form>
-                    <button type="button" id="openLikersModal{{ post.id }}" class="flex items-center hover:text-white transition-colors cursor-pointer text-white/40">
+                    <button type="button" onclick="openStatsModal('{{ post.id }}', 'likes')" class="flex items-center hover:text-white transition-colors cursor-pointer text-white/40">
                         <span class="text-xs">{{ post.post_likes.count }}</span>
                     </button>
                 </div>
@@ -91,11 +91,54 @@
                     <a href="{% url 'login' %}?next={{ request.get_full_path }}" class="flex items-center hover:text-white transition-colors cursor-pointer text-white/40">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart transition-transform hover:scale-110"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></svg>
                     </a>
-                    <button type="button" id="openLikersModal{{ post.id }}" class="flex items-center hover:text-white transition-colors cursor-pointer text-white/40">
+                    <button type="button" onclick="openStatsModal('{{ post.id }}', 'likes')" class="flex items-center hover:text-white transition-colors cursor-pointer text-white/40">
                         <span class="text-xs">{{ post.post_likes.count }}</span>
                     </button>
                 </div>
                 {% endif %}
+
+                <!--                 КНОПКИ РЕАКЦІЇ                         -->
+                <div class="flex items-center gap-4 ml-2 pl-4 border-l border-white/10" onclick="event.stopPropagation()">
+
+                    <form action="{% url 'toggle_reaction' post.id 'toxic' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="flex flex-col items-center group">
+                            <span class="text-[9px] font-black uppercase tracking-tighter transition-all
+                                {% if post.user_current_reaction == 'toxic' %}text-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]{% else %}text-white/20 group-hover:text-green-500/60{% endif %}">
+                                Toxic
+                            </span>
+                        </button>
+                    </form>
+                    <button class="text-[12px] font-mono text-white/40"  onclick="openStatsModal('{{ post.id }}', 'toxic')">
+                        {{ post.toxic_count }}
+                    </button>
+
+
+                    <form action="{% url 'toggle_reaction' post.id 'cringe' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="flex flex-col items-center group">
+                            <span class="text-[9px] font-black uppercase tracking-tighter transition-all
+                                {% if post.user_current_reaction == 'cringe' %}text-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]{% else %}text-white/20 group-hover:text-purple-500/60{% endif %}">
+                                Cringe
+                            </span>
+                        </button>
+                        </form>
+                    <button class="text-[12px] font-mono text-white/40" onclick="openStatsModal('{{ post.id }}', 'cringe')">{{ post.cringe_count }}</button>
+
+
+                    <form action="{% url 'toggle_reaction' post.id 'based' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="flex flex-col items-center group">
+                            <span class="text-[9px] font-black uppercase tracking-tighter transition-all
+                                {% if post.user_current_reaction == 'based' %}text-blue-400 shadow-[0_0_10px_rgba(96,165,250,0.5)]{% else %}text-white/20 group-hover:text-blue-400/60{% endif %}">
+                                Based
+                            </span>
+                        </button>
+                    </form>
+                    <button class="text-[12px] font-mono text-white/40" onclick="openStatsModal('{{ post.id }}', 'bases')">{{ post.based_count }}</button>
+                </div>
+
+
                 <!--                 КНОПКА КОМЕНТ                         -->
                 <button class="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer">
                     <a href="{% if not user.is_authenticated %}{% url 'login' %}{% else %}javascript:void(0){% endif %}" id="openCreateCommentModal{{ post.id }}" class="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer">
@@ -158,34 +201,134 @@
 
 <!--        ==================================================== КІНЕЦЬ ЛОГІКИ ПОСТА ====================================================-->
 
-<!--        ==================================================== МОДАЛКА ХТО ЛАЙКАВ ====================================================-->
-<div id="likersModal{{ post.id }}" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 ease-out">
-    <div class="w-full max-w-md bg-black border border-white/20 p-6 max-h-[70vh] flex flex-col">
-        <div class="flex justify-between items-center mb-4">
-            <span class="font-bold text-sm">Хто лайкнув</span>
-            <button type="button" id="closeLikersModal{{ post.id }}" class="text-white/40 hover:text-white transition-colors cursor-pointer">
+
+
+<!--        ==================================================== МОДАЛКА ЛАЙКИ + ОЦІНКИ ====================================================-->
+<div id="statsModal{{ post.id }}" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 ease-out">
+    <div class="w-full max-w-md bg-black border border-white/20 p-6 h-[500px] flex flex-col shadow-2xl shadow-red-500/10">
+
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="font-black uppercase tracking-widest text-xs text-white/40">Post Statistics</h3>
+            <button type="button" onclick="closeStatsModal('{{ post.id }}')" class="text-white/40 hover:text-white">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
             </button>
         </div>
-        <div class="overflow-y-auto flex-1 space-y-2">
-            {% for like in post.post_likes.all %}
-                <a href="{% url 'profile_detail' like.profile.user.username %}" class="flex items-center gap-3 p-2 hover:bg-white/5 transition-colors rounded">
-                    <div class="w-10 h-10 border border-white/20 bg-white/5 shrink-0 overflow-hidden rounded-full">
-                        {% if like.profile.avatar %}
-                            <img src="{{ like.profile.avatar }}" alt="" class="w-full h-full object-cover" referrerpolicy="no-referrer"/>
-                        {% endif %}
-                    </div>
-                    <div>
-                        <div class="font-bold text-sm">{% firstof like.profile.name like.profile.user.username %}</div>
-                        <div class="text-xs text-white/40">@{{ like.profile.user.username }}</div>
-                    </div>
-                </a>
-            {% empty %}
-                <p class="text-sm text-white/40 py-4">Поки ніхто не лайкнув</p>
-            {% endfor %}
+
+        <div class="flex border-b border-white/10 mb-4">
+            <button onclick="switchTab('{{ post.id }}', 'likes')" class="flex-1 pb-2 text-[10px] font-bold uppercase tracking-tighter border-b-2 border-transparent transition-all cursor-pointer" id="tab-likes-{{ post.id }}">
+                Likes ({{ post.post_likes.count }})
+            </button>
+            <button onclick="switchTab('{{ post.id }}', 'toxic')" class="flex-1 pb-2 text-[10px] font-bold uppercase tracking-tighter border-b-2 border-transparent transition-all cursor-pointer" id="tab-toxic-{{ post.id }}">
+                Toxic ({{ post.toxic_count }})
+            </button>
+            <button onclick="switchTab('{{ post.id }}', 'cringe')" class="flex-1 pb-2 text-[10px] font-bold uppercase tracking-tighter border-b-2 border-transparent transition-all cursor-pointer" id="tab-cringe-{{ post.id }}">
+                Cringe ({{ post.cringe_count }})
+            </button>
+            <button onclick="switchTab('{{ post.id }}', 'based')" class="flex-1 pb-2 text-[10px] font-bold uppercase tracking-tighter border-b-2 border-transparent transition-all cursor-pointer" id="tab-based-{{ post.id }}">
+                Based ({{ post.based_count }})
+            </button>
+        </div>
+
+        <div class="overflow-y-auto flex-1 pr-2 custom-scrollbar">
+            <div id="list-likes-{{ post.id }}" class="hidden space-y-2">
+                {% for like in post.post_likes.all %}
+                    {% include 'posts/user-row.html' with profile=like.profile %}
+                {% empty %}
+                    <p class="text-[10px] text-white/20 uppercase text-center py-10">No likes yet</p>
+                {% endfor %}
+            </div>
+
+            <div id="list-toxic-{{ post.id }}" class="hidden space-y-2">
+                {% for r in post.reactions.all %}{% if r.type == 'toxic' %}
+                    {% include 'posts/user-row.html' with profile=r.user.profile %}
+                {% endif %}{% endfor %}
+            </div>
+
+            <div id="list-cringe-{{ post.id }}" class="hidden space-y-2">
+                 {% for r in post.reactions.all %}{% if r.type == 'cringe' %}
+                    {% include 'posts/user-row.html' with profile=r.user.profile %}
+                {% endif %}{% endfor %}
+            </div>
+
+            <div id="list-based-{{ post.id }}" class="hidden space-y-2">
+                 {% for r in post.reactions.all %}{% if r.type == 'based' %}
+                   {% include 'posts/user-row.html' with profile=r.user.profile %}
+                {% endif %}{% endfor %}
+            </div>
         </div>
     </div>
 </div>
+<!--        ==================================================== КІНЕЦЬ МОДАЛКИ ХТО ЛАЙКАВ ====================================================-->
+
+
+
+
+<script>
+    function openStatsModal(postId, initialTab) {
+    const modal = document.getElementById(`statsModal${postId}`);
+    modal.classList.remove('opacity-0', 'pointer-events-none');
+    switchTab(postId, initialTab);
+}
+
+function closeStatsModal(postId) {
+    const modal = document.getElementById(`statsModal${postId}`);
+    modal.classList.add('opacity-0', 'pointer-events-none');
+}
+
+function switchTab(postId, tabName) {
+    // 1. Сховати всі списки
+    const lists = ['likes', 'toxic', 'cringe', 'based'];
+    lists.forEach(name => {
+        document.getElementById(`list-${name}-${postId}`).classList.add('hidden');
+        document.getElementById(`tab-${name}-${postId}`).classList.remove('border-red-500', 'text-white');
+        document.getElementById(`tab-${name}-${postId}`).classList.add('text-white/20');
+    });
+
+    // 2. Показати потрібний
+    document.getElementById(`list-${tabName}-${postId}`).classList.remove('hidden');
+    document.getElementById(`tab-${tabName}-${postId}`).classList.add('border-red-500', 'text-white');
+    document.getElementById(`tab-${tabName}-${postId}`).classList.remove('text-white/20');
+}
+
+
+
+
+
+function switchTab(postId, tabName) {
+    const lists = ['likes', 'toxic', 'cringe', 'based'];
+
+    // Кольори для підсвітки
+    const themeColors = {
+        'likes': 'border-red-500 text-red-500 shadow-[0_4px_10px_-2px_rgba(239,68,68,0.3)]',
+        'toxic': 'border-green-500 text-green-500 shadow-[0_4px_10px_-2px_rgba(34,197,94,0.3)]',
+        'cringe': 'border-purple-500 text-purple-500 shadow-[0_4px_10px_-2px_rgba(168,85,247,0.3)]',
+        'based': 'border-blue-400 text-blue-400 shadow-[0_4px_10px_-2px_rgba(96,165,250,0.3)]'
+    };
+
+    lists.forEach(name => {
+        const tab = document.getElementById(`tab-${name}-${postId}`);
+        const list = document.getElementById(`list-${name}-${postId}`);
+
+        // Скидаємо всі стилі
+        list.classList.add('hidden');
+        tab.className = "flex-1 pb-2 text-[10px] font-bold uppercase tracking-tighter border-b-2 border-transparent transition-all text-white/20";
+    });
+
+    // Активуємо потрібний таб
+    const activeTab = document.getElementById(`tab-${tabName}-${postId}`);
+    const activeList = document.getElementById(`list-${tabName}-${postId}`);
+
+    activeList.classList.remove('hidden');
+    // Додаємо специфічний колір з об'єкта themeColors
+    activeTab.className = `flex-1 pb-2 text-[10px] font-bold uppercase tracking-tighter border-b-2 transition-all ${themeColors[tabName]}`;
+}
+</script>
+
+
+
+
+
+
 
 <!--        ==================================================== ПОЧАТОК ЛОГІКИ МОДАЛКИ КОМЕНТАРЯ ====================================================-->
 <div id="createCommentModal{{ post.id }}" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 ease-out">
@@ -234,10 +377,73 @@
         </form>
     </div>
 </div>
+<!--        ==================================================== КІНЕЦЬ ЛОГІКИ МОДАЛКИ КОМЕНТАРЯ ====================================================-->
 
 
 
 
+<!--        ==================================================== МОДАЛКА ДЛЯ СКАРГИ ====================================================-->
+<div id="reportModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-black border border-white/10 w-full max-w-md p-6 shadow-2xl">
+        <div class="mb-4">
+            <h2 class="text-xl font-black text-white uppercase tracking-tighter">Submit <span class="text-red-500">Report</span></h2>
+            <p id="modalPostTitle" class="text-white/40 text-[10px] uppercase mt-1"></p>
+        </div>
+
+        <form id="reportForm" method="POST" action="">
+            {% csrf_token %}
+            <input type="hidden" name="post_id" id="modalPostId">
+
+            <textarea name="reason"
+                      class="w-full bg-white/5 border border-white/10 text-white p-3 text-sm focus:border-red-500 outline-none transition-all resize-none"
+                      rows="4"
+                      placeholder="Why is this toxic? Explain..."></textarea>
+
+            <div class="flex gap-2 mt-4">
+                <button type="submit" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-black py-2 uppercase text-xs tracking-widest transition-colors">
+                    Send Report
+                </button>
+                <button type="button" onclick="closeReportModal()" class="flex-1 bg-white/5 text-white/60 font-black py-2 uppercase text-xs tracking-widest border border-white/5">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<!--        ==================================================== КІНЕЦЬ МОДАЛКИ ДЛЯ СКАРГИ ====================================================-->
+
+
+
+<!--        ==================================================== ДЖАВАСКРИПТ ДЛЯ СКАРГИ ====================================================-->
+<script>
+    function openReportModal(postId, postTitle) {
+        const modal = document.getElementById('reportModal');
+        const form = document.getElementById('reportForm');
+        const title = document.getElementById('modalPostTitle');
+
+        // Встановлюємо динамічний URL для форми (заміни 'post' на назву свого URL-шляху)
+        form.action = `/post/${postId}/report/`;
+        title.innerText = `Post: "${postTitle}"`;
+
+        modal.classList.remove('hidden');
+    }
+
+    function closeReportModal() {
+        document.getElementById('reportModal').classList.add('hidden');
+    }
+
+    // Закриття при кліку поза вікном
+    window.onclick = function(event) {
+        const modal = document.getElementById('reportModal');
+        if (event.target == modal) {
+            closeReportModal();
+        }
+    }
+</script>
+
+
+
+<!--        ==================================================== ДЖАВАСКРИПТ ДЛЯ ТОГО, ЩОБ ВІДКРИВАТИ ПОСТ КЛАЦАННЯМ НА ФОН ====================================================-->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
     const postCards = document.querySelectorAll('.post-card');
@@ -255,6 +461,8 @@
 });
 </script>
 
+
+<!--        ==================================================== ДЖАВАСКРИПТ ДЛЯ ЛАЙКІВ І КОМЕНТАРІВ ====================================================-->
 <script>
 (function() {
     // ================================= ДАНІ ДЛЯ КОЖНОГО КОНКРЕТНОГО ПОСТА =================================
@@ -349,6 +557,7 @@
 </script>
 
 
+<!--        ==================================================== ДЖАВАСКРИПТ ДЛЯ КНОПКИ ... ====================================================-->
 <script>
     // Функція "Поділитись"
     function sharePost(title, relativeUrl) {
