@@ -38,23 +38,25 @@
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
                                 Share
                             </button>
-                            <a href="{% url 'report_post' post.id %}"
-                               class="flex items-center gap-3 px-3 py-2 text-[10px] text-red-500/50 hover:bg-red-500/5 hover:text-red-500 transition-colors uppercase font-bold text-left">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/></svg>
-                                Report
-                            </a>
+                            {% if post.userProfile.user != user %}
+                                <a href="{% url 'report_post' post.id %}"
+                                   class="flex items-center gap-3 px-3 py-2 text-[10px] text-red-500/50 hover:bg-red-500/5 hover:text-red-500 transition-colors uppercase font-bold text-left">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/></svg>
+                                    Report
+                                </a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
         <!--    --------------------------------------------------------- ВМІСТ ПОСТА ---------------------------------------------------------        -->
             {% if post.title %}
-                <h2 class="text-base font-black uppercase tracking-tight mb-1 text-white/70">
+                <h2 class="text-base font-black uppercase tracking-tight mb-1 text-white">
                     {{ post.title }}
                 </h2>
             {% endif %}
 
-            <p class="text-sm leading-relaxed mb-4 text-white/55">
+            <p class="text-sm leading-relaxed mb-4 text-white/90">
                 {{post.body}}
             </p>
 

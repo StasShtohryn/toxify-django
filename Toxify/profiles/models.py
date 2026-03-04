@@ -98,6 +98,10 @@ class Profile(models.Model):
         # Припускається, що Post має ForeignKey(User, related_name='posts')
         return self.user.posts.count()
 
+    @property
+    def has_unread_notifications(self):
+        return self.user.notifications.filter(is_read=False).exists()
+
     # ── Helpers ──────────────────────────────────────────────────────────────
 
     def is_following(self, other_profile: "Profile") -> bool:

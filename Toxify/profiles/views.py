@@ -7,7 +7,7 @@ from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import DetailView, FormView
 
-from posts.models import Post
+from posts.models import Post, Report
 from posts.views import _add_liked_to_posts
 from .forms import ProfileEditForm, RegisterForm, UsernameEditForm
 from .models import User, Profile
