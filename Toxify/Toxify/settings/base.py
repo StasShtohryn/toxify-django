@@ -35,7 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'main',
-    'posts',
+    'posts.apps.PostsConfig',
     'profiles.apps.ProfileConfig',
     'widget_tweaks',
 ]

@@ -10,7 +10,7 @@ from django.views.generic import DetailView, FormView
 from posts.models import Post, Report
 from posts.views import _add_liked_to_posts
 from .forms import ProfileEditForm, RegisterForm, UsernameEditForm
-from .models import User, Profile
+from .models import User, Profile, Repost
 from utils.blobs import upload_to_vercel_blob
 
 # ── Реєстрація ────────────────────────────────────────────────────────────────
@@ -109,7 +109,7 @@ class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, View):
                 profile = form.save(commit=False)
                 avatar_file = request.FILES.get('avatar')
                 if avatar_file:
-                    profile.avatar = upload_to_vercel_blob(avatar_file)
+                    profile.avatar = upload_to_vercel_blob(avatar_file, folder="avatars")
 
                 profile.save()
                 messages.success(request, "Профіль оновлено ✅")

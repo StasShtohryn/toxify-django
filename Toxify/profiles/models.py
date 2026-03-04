@@ -131,18 +131,18 @@ class Profile(models.Model):
 
 
 
-# class Repost(models.Model):
-#     profile = models.ForeignKey(
-#         Profile,
-#         on_delete=models.CASCADE,
-#         related_name="reposts",
-#     )
-#     post = models.ForeignKey(
-#         "posts.Post",
-#         on_delete=models.CASCADE,
-#         related_name="reposted_by",
-#     )
-#     created_at = models.DateTimeField(auto_now_add=True)
-#
-#     class Meta:
-#         unique_together = ("profile", "post")
+class Repost(models.Model):
+    profile = models.ForeignKey(
+        Profile,
+        on_delete=models.CASCADE,
+        related_name="reposts",
+    )
+    post = models.ForeignKey(
+        "posts.Post",
+        on_delete=models.CASCADE,
+        related_name="reposted_by",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("profile", "post")
