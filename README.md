@@ -55,6 +55,8 @@ Create ```.env``` file next to ```manage.py``` in ```Toxify/``` folder with the 
 DEBUG=True
 SECRET_KEY='YOUR_DJANGO_SECRET_KEY'
 
+VERCEL_BLOB_TOKEN=YOUR_VERCEL_BLOB_TOKEN
+
 DB_NAME=YOUR_DB_NAME
 DB_USER=YOUR_DB_USER
 DB_PASSWORD=YOUR_DB_PASSWORD
