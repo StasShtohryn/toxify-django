@@ -1,14 +1,16 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse, reverse_lazy
 from django.views.generic import ListView, TemplateView, DetailView
 from django.views import View
 from django.db.models import Q
+from django.contrib import messages
 
 from . import forms
-from .models import Post, Hashtag, Comment, PostLike
+from .models import Post, Hashtag, Comment, PostLike, Report
+from .models import Post, Hashtag, Comment, Notification
 from profiles.models import Profile, User
 
 
@@ -152,6 +154,14 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         return context
 
 
+class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Post
+    template_name = 'posts/post_confirm_delete.html' # Твоя сторінка підтвердження
+    success_url = reverse_lazy('posts:post_list')
+
+    def test_func(self):
+        post = self.get_object()
+        return self.request.user == post.userProfile.user or self.request.user.is_superuser
 
 
 class CommentCreateView(LoginRequiredMixin, CreateView):
@@ -188,29 +198,73 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
         return context
 
 
+
+MAX_REPORTS = 2
 @login_required
 def report_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     author_profile = post.userProfile
 
-    author_profile.reputation_score -= 1
+    if request.user == author_profile.user:
+        messages.warning(request, "You can't report your own post. That's just weird.")
+        return redirect(request.META.get('HTTP_REFERER', '/'))
 
-    rep = author_profile.reputation_score
-    if rep >= 50:
-        author_profile.toxicity_level = 0
-    elif rep >= 10:
-        author_profile.toxicity_level = 1
-    elif rep >= 0:
-        author_profile.toxicity_level = 2
-    elif rep >= -20:
-        author_profile.toxicity_level = 3
-    elif rep >= -50:
-        author_profile.toxicity_level = 4
+    report_exists = Report.objects.filter(reporter=request.user, post=post).exists()
+
+    if not report_exists:
+        Report.objects.create(reporter=request.user, post=post)
+        author_profile.reputation_score -= 1
+        author_profile.save()
+
+        report_count = Report.objects.filter(post=post).count()
+
+        Notification.objects.create(
+            recipient=author_profile.user,
+            sender=request.user,
+            post=post,
+            message=f"reported your toxic post: '{post.title[:20]}...'"
+        )
+
+        if report_count >= MAX_REPORTS:
+            author = author_profile.user
+            deleted_post_title = post.title[:20]
+
+            post.delete()
+
+            Notification.objects.create(
+                recipient=author_profile.user,
+                sender=None,
+                post=None,
+                message=f"Your post '{deleted_post_title}...' was deleted due to big amount of community reports!"
+            )
+
+            messages.warning(request, "Post removed by community safety system.")
+
+            return redirect(request.META.get('HTTP_REFERER', '/'))
+        else:
+            messages.success(request, f"Report recorded. ({report_count}/{MAX_REPORTS})")
+
     else:
-        author_profile.toxicity_level = 5
-    author_profile.save()
+        messages.warning(request, "You have already reported this post.")
 
     return redirect(request.META.get('HTTP_REFERER', '/'))
+
+
+@login_required
+def notifications_list(request):
+    # 1. Отримуємо сповіщення
+    notifications = Notification.objects.filter(recipient=request.user).order_by('-created_at')
+
+    # Створюємо список непрочитаних ID, щоб передати їх у шаблон окремо,
+    # або просто завантажуємо QuerySet у пам'ять через list()
+    notifications_list = list(notifications)
+
+    # 2. Оновлюємо статус у базі (це не вплине на вже завантажений notifications_list)
+    Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
+
+    return render(request, 'posts/notifications.html', {'notifications': notifications_list})
+
+
 
 
 class LikePostToggleView(LoginRequiredMixin, View):
