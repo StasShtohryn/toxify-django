@@ -42,6 +42,24 @@ class Post(models.Model):
     def get_last_main_comment(self):
         return self.post_comments.filter(parent__isnull=True).last()
 
+    @property
+    def toxic_count(self):
+        return self.reactions.filter(type='toxic').count()
+
+    @property
+    def cringe_count(self):
+        return self.reactions.filter(type='cringe').count()
+
+    @property
+    def based_count(self):
+        return self.reactions.filter(type='based').count()
+
+    def user_current_reaction(self, user):
+        reaction = self.reactions.filter(user=user).first()
+        return reaction.type if reaction else None
+
+
+
 
 class PostLike(models.Model):
     """Лайк поста. Один юзер — один лайк на пост."""
@@ -59,6 +77,28 @@ class PostLike(models.Model):
 
     class Meta:
         unique_together = ('profile', 'post')
+
+
+
+class Reaction(models.Model):
+    """ Реакція людини на пост. Потрібна для формування рейтингу. """
+    REACTION_CHOICES = [
+        ('toxic', 'Toxic'),
+        ('cringe', 'Cringe'),
+        ('based', 'Based'),
+    ]
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='reactions'
+    )
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='reactions')
+    type = models.CharField(max_length=10, choices=REACTION_CHOICES)
+
+    class Meta:
+        unique_together = ('user', 'post')
+
 
 
 class Comment(models.Model):
@@ -95,6 +135,7 @@ class Report(models.Model):
         on_delete=models.CASCADE,
         related_name='reports'
     )
+    reason = models.TextField(max_length=500, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     # Заборона на повторну скаргу

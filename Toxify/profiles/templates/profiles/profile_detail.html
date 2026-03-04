@@ -33,7 +33,7 @@
           {{ profile.followers_count }} FOLLOWERS
         </button>
         <div class="text-xs text-white/40 hover:text-white cursor-pointer transition-colors">
-          Toxic level: {{profile.reputation_score}}
+          Toxic level: {{profile.get_toxicity_level_display}} Reputation: {{profile.reputation_score}}
         </div>
         <div class="flex gap-2">
           {% if is_owner %}

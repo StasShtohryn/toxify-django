@@ -9,7 +9,8 @@ from django.db.models import Q
 from django.contrib import messages
 
 from . import forms
-from .models import Post, Hashtag, Comment, PostLike, Report
+from .forms import ReportForm
+from .models import Post, Hashtag, Comment, PostLike, Report, Reaction
 from .models import Post, Hashtag, Comment, Notification
 from profiles.models import Profile, User
 
@@ -53,6 +54,7 @@ class SearchView(TemplateView):
             ).select_related('user').order_by('-created_at')[:20]
 
         return context
+
 
 def _add_liked_to_posts(request, posts):
     """Додає post.user_has_liked для кожного поста."""
@@ -143,6 +145,8 @@ class PostCreateView(LoginRequiredMixin, CreateView):
                 tag, created = Hashtag.objects.get_or_create(name=tag_name)
                 self.object.hashtags.add(tag)
 
+        messages.success(self.request, "Post created successfully!")
+
         return response
 
     def get_success_url(self):
@@ -174,6 +178,28 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
         self.post_obj = get_object_or_404(Post, pk=kwargs['post_id'])
         return super().dispatch(request, *args, **kwargs)
 
+    def create_comment_notification(self):
+        new_comment = self.object
+        sender = self.request.user
+
+        # 1) Це відповідь на чийсь коментар (Reply)
+        if new_comment.parent:
+            recipient = new_comment.parent.commentProfile.user
+            msg = f"replied to your comment on '{self.post_obj.title[:20]}...'"
+
+        # 2) Це новий коментар до поста
+        else:
+            recipient = self.post_obj.userProfile.user
+            msg = f"commented on your post: '{self.post_obj.title[:20]}...'"
+
+        if recipient != sender:
+            Notification.objects.create(
+                recipient=recipient,
+                sender=sender,
+                post=self.post_obj,
+                message=msg
+            )
+
     def form_valid(self, form):
         form.instance.commentProfile = self.commentProfile
         form.instance.post_to = self.post_obj
@@ -187,7 +213,11 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
             from utils.blobs import upload_to_vercel_blob
             form.instance.images = upload_to_vercel_blob(image_file)
 
-        return super().form_valid(form)
+
+        response = super().form_valid(form)
+        self.create_comment_notification()
+
+        return response
 
     def get_success_url(self):
         return reverse('post_detail', kwargs={'post_id': self.object.post_to.pk})
@@ -204,48 +234,54 @@ MAX_REPORTS = 2
 def report_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     author_profile = post.userProfile
+    post_author = author_profile.user  # Якщо видалиться пост, треба знати автора
 
-    if request.user == author_profile.user:
+    if request.user == post_author:
         messages.warning(request, "You can't report your own post. That's just weird.")
         return redirect(request.META.get('HTTP_REFERER', '/'))
 
-    report_exists = Report.objects.filter(reporter=request.user, post=post).exists()
+    if Report.objects.filter(reporter=request.user, post=post).exists():
+        messages.warning(request, "You have already reported this post.")
+        return redirect(request.META.get('HTTP_REFERER', '/'))
 
-    if not report_exists:
-        Report.objects.create(reporter=request.user, post=post)
-        author_profile.reputation_score -= 1
-        author_profile.save()
+    if request.method == 'POST':
+        form = ReportForm(request.POST)
+        if form.is_valid():
+            report = form.save(commit=False)
+            report.reporter = request.user
+            report.post = post
+            report.save()
 
-        report_count = Report.objects.filter(post=post).count()
+            author_profile.reputation_score -= 20
+            author_profile.recalculate_toxicity()
+            author_profile.save()
 
-        Notification.objects.create(
-            recipient=author_profile.user,
-            sender=request.user,
-            post=post,
-            message=f"reported your toxic post: '{post.title[:20]}...'"
-        )
+            report_count = Report.objects.filter(post=post).count()
+            reason_text = report.reason if report.reason else "No specific reason provided."
 
-        if report_count >= MAX_REPORTS:
-            author = author_profile.user
-            deleted_post_title = post.title[:20]
-
-            post.delete()
 
             Notification.objects.create(
-                recipient=author_profile.user,
-                sender=None,
-                post=None,
-                message=f"Your post '{deleted_post_title}...' was deleted due to big amount of community reports!"
+                recipient=post_author,
+                sender=request.user,
+                post=post,
+                message=f"reported your toxic post: '{post.title[:20]}...'\nReason:{reason_text}"
             )
 
-            messages.warning(request, "Post removed by community safety system.")
+            if report_count >= MAX_REPORTS:
+                deleted_post_title = post.title[:20]
+                post.delete()
 
-            return redirect(request.META.get('HTTP_REFERER', '/'))
-        else:
+                Notification.objects.create(
+                    recipient=post_author,
+                    sender=None,
+                    post=None,
+                    message=f"Your post '{deleted_post_title}...' was deleted due to big amount of community reports!"
+                )
+                messages.warning(request, "THANK YOU FOR BUILDING OUR APP BETTER! Post removed by community safety system.")
+                return redirect(request.META.get('HTTP_REFERER', '/'))
+
             messages.success(request, f"Report recorded. ({report_count}/{MAX_REPORTS})")
-
-    else:
-        messages.warning(request, "You have already reported this post.")
+            return redirect(request.META.get('HTTP_REFERER', '/'))
 
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
@@ -279,8 +315,69 @@ class LikePostToggleView(LoginRequiredMixin, View):
         if not created:
             like.delete()
             liked = False
+
         else:
             liked = True
+            if post.userProfile != profile:
+                Notification.objects.create(
+                    recipient=post.userProfile.user,
+                    sender=request.user,
+                    post=post,
+                    message=f"liked your toxic post: '{post.title[:20]}...'"
+                )
 
         redirect_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or reverse('posts')
         return redirect(redirect_url)
+
+
+@login_required
+def toggle_reaction(request, post_id, reaction_type):
+    post = get_object_or_404(Post, id=post_id)
+    author_profile = post.userProfile
+    user = request.user
+
+    if post.userProfile.user == request.user:
+        messages.warning(request, "Self-praise is no praise. You can't rate your own post!")
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+
+    REACTION_WEIGHTS = {
+        'based': 2,
+        'toxic': -2,
+        'cringe': -1,
+    }
+
+    existing_reaction = Reaction.objects.filter(user=user, post=post).first()
+    send_notification = True
+
+    if existing_reaction:
+        # 1) Юзер натиснув на ту саму кнопку (хоче прибрати реакцію)
+        if existing_reaction.type == reaction_type:
+            author_profile.reputation_score -= REACTION_WEIGHTS[reaction_type]
+            existing_reaction.delete()
+            send_notification = False
+
+        # 2) Юзер передумав і змінив тип (наприклад з Cringe на Based)
+        else:
+            author_profile.reputation_score -= REACTION_WEIGHTS[existing_reaction.type]
+            author_profile.reputation_score += REACTION_WEIGHTS[reaction_type]
+            existing_reaction.type = reaction_type
+            existing_reaction.save()
+            send_notification = True
+
+    else:
+        # 3) Юзер ставить реакцію вперше
+        existing_reaction = Reaction.objects.create(user=user, post=post, type=reaction_type)
+        author_profile.reputation_score += REACTION_WEIGHTS[reaction_type]
+
+    author_profile.recalculate_toxicity()
+    author_profile.save()
+
+    if send_notification:
+        Notification.objects.create(
+            recipient = author_profile.user,
+            sender=user,
+            post=post,
+            message=f" mark your post '{post.title}...' as {reaction_type.upper()}"
+        )
+
+    return redirect(request.META.get('HTTP_REFERER', '/'))
