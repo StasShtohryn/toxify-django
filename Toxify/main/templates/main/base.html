@@ -163,7 +163,7 @@
             </div>
 
             <h3 class="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 mb-2 italic">
-                System {{ message.tags }}
+                {{ message.tags }}
             </h3>
 
             <p class="text-white text-sm font-light mb-6 uppercase tracking-wider">
@@ -171,11 +171,11 @@
             </p>
 
             <button onclick="closeMsgModal()"
-                    class="w-full py-3 border text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300
+                    class="w-full py-3 border text-[10px] cursor-pointer font-black uppercase tracking-[0.2em] transition-all duration-300
                     {% if message.tags == 'success' %} border-green-500 text-green-500 hover:bg-green-500 hover:text-black
                     {% elif message.tags == 'error' or message.tags == 'warning' %} border-red-500 text-red-500 hover:bg-red-500 hover:text-black
                     {% else %} border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-black {% endif %}">
-                Acknowledge
+                OK
             </button>
         </div>
     </div>
