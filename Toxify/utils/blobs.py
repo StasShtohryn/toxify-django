@@ -24,3 +24,32 @@ def upload_to_vercel_blob(file):
         raise Exception(f"Upload failed: {response.text}")
 
     return response.json()["url"]
+
+
+
+def delete_from_vercel_blob(url: str) -> None:
+    """
+    Видаляє файл з Vercel Blob за його URL.
+    Не видаляє дефолтний аватар.
+    """
+    if not url:
+        return
+
+    # Не видаляємо дефолтний аватар
+    if 'default.jpg' in url:
+        return
+
+    token = os.getenv("VERCEL_BLOB_TOKEN")
+    if not token:
+        return
+
+    try:
+        response = requests.delete(
+            "https://blob.vercel-storage.com",
+            headers={"Authorization": f"Bearer {token}"},
+            json={"urls": [url]},
+        )
+        if response.status_code not in (200, 204):
+            print(f"Vercel Blob delete failed: {response.text}")
+    except Exception as e:
+        print(f"Vercel Blob delete error: {e}")
