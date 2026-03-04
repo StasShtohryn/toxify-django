@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save, pre_delete, pre_save
 from django.dispatch import receiver
 
+from utils.blobs import delete_from_vercel_blob
 from .models import Profile
 
 User = get_user_model()
@@ -15,6 +16,27 @@ def create_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.get_or_create(user=instance)
 
+
+
+@receiver(pre_delete, sender=Profile)
+def delete_avatar_on_profile_delete(sender, instance, **kwargs):
+    """Видаляє аватар з Vercel Blob при видаленні профілю."""
+    delete_from_vercel_blob(instance.avatar)
+
+
+@receiver(pre_save, sender=Profile)
+def delete_old_avatar_on_update(sender, instance, **kwargs):
+    """Видаляє старий аватар якщо юзер завантажив новий."""
+    if not instance.pk:
+        return
+
+    try:
+        old_avatar = Profile.objects.get(pk=instance.pk).avatar
+    except Profile.DoesNotExist:
+        return
+
+    if old_avatar and old_avatar != instance.avatar:
+        delete_from_vercel_blob(old_avatar)
 
 # def delete_file(file_field) -> None:
 #     if file_field and os.path.isfile(file_field.path):
