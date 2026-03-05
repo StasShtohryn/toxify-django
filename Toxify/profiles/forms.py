@@ -37,11 +37,8 @@ class ProfileEditForm(forms.ModelForm):
 
     class Meta:
         model = Profile
-        fields = ('name', "avatar", "bio", 'tag')
+        fields = ('name', "bio", 'tag')
         widgets = {
-            'avatar': forms.FileInput(
-
-            ),
             'name': forms.TextInput(
                 attrs={
                     'placeholder': 'Введіть ваше ім\'я '

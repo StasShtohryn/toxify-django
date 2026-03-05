@@ -125,7 +125,7 @@ class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, View):
                     profile.avatar = upload_to_vercel_blob(avatar_file, folder="avatars")
 
                 profile.save()
-                messages.success(request, "Профіль оновлено ✅")
+                messages.success(request, "Profile updated!")
                 return redirect("profile_detail", username=request.user.username)
             return self._render(request, form, UsernameEditForm(instance=request.user))
 
@@ -133,7 +133,7 @@ class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, View):
             form = UsernameEditForm(request.POST, instance=request.user)
             if form.is_valid():
                 form.save()
-                messages.success(request, "Акаунт оновлено ✅")
+                messages.success(request, "Account updated!")
                 return redirect("profile_detail", username=request.user.username)
             return self._render(request, ProfileEditForm(instance=request.user.profile), form)
 
