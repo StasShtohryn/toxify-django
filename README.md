@@ -44,8 +44,13 @@ pip install python-dotenv
 ```
 
 Python-Decouple:
-```
+```console
 pip install python-decouple psycopg2-binary
+```
+
+Vercel:
+```console
+pip install vercel
 ```
 
 ## Configuration
