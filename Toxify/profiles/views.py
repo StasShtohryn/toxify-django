@@ -7,7 +7,7 @@ from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import DetailView, FormView
 
-from posts.models import Post, Report
+from posts.models import Post, Report, Notification, Comment
 from posts.views import _add_liked_to_posts
 from .forms import ProfileEditForm, RegisterForm, UsernameEditForm
 from .models import User, Profile, Repost
@@ -66,6 +66,11 @@ class ProfileDetailView(DetailView):
         posts = list(profile.posts.order_by("-created_at")[:20])
         _add_liked_to_posts(self.request, posts)
         context["posts"] = posts
+
+        context['replies'] = Comment.objects.filter(
+            commentProfile=profile
+        ).select_related('post_to').order_by('-created_at')
+
         return context
 
 
@@ -142,8 +147,9 @@ class FollowToggleView(LoginRequiredMixin, View):
         if target_user == request.user:
             if self._is_ajax(request):
                 return JsonResponse(
-                    {"error": "Не можна підписатись на себе."}, status=400
+                    {"error": "You can't subscribe yourself!"}, status=400
                 )
+            messages.errors(request, "You can't subscribe yourself!")
             return redirect("profile_detail", username=username)
 
         my_profile = request.user.profile
@@ -155,6 +161,13 @@ class FollowToggleView(LoginRequiredMixin, View):
         else:
             my_profile.following.add(target_profile)
             following = True
+
+            Notification.objects.create(
+                recipient=target_user,
+                sender=request.user,
+                post=None,
+                message=f" started following you!"
+            )
 
         if self._is_ajax(request):
             return JsonResponse({

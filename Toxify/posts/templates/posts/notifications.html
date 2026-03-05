@@ -24,7 +24,9 @@
                         <div class="flex justify-between items-start mb-1">
                             <p class="text-sm text-white/80 leading-snug">
                                 {% if note.sender %}
-                                    <span class="font-bold text-green-400">@{{ note.sender.username }}</span>
+                                    <a href="{% url 'profile_detail' note.sender.username %}" class="hover:underline">
+                                        <span class="font-bold text-green-400">@{{ note.sender.username }}</span>
+                                    </a>
                                 {% else %}
                                     <span class="font-bold text-green-400"><strong>SYSTEM</strong></span>
                                 {% endif %}
