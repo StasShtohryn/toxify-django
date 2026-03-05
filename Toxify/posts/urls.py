@@ -1,6 +1,6 @@
 from . import views
 from .views import PostsListView, PostCreateView, SearchView, CommentCreateView, PostDetailView, LikePostToggleView, \
-    LikeCommentToggleView
+    LikeCommentToggleView, PostDeleteView
 from django.urls import path, include
 
 urlpatterns = [
@@ -16,4 +16,7 @@ urlpatterns = [
     path('comment/<int:comment_id>/like/', views.LikeCommentToggleView.as_view(), name='like_comment_toggle'),
     path('post/<int:post_id>/react/<str:reaction_type>/', views.toggle_reaction, name='toggle_reaction'),
     path('comment/<int:comment_id>/react/<str:reaction_type>/', views.toggle_comment_reaction, name='toggle_comment_reaction'),
+    path('post/<int:pk>/delete/', PostDeleteView.as_view(), name='post_delete'),
+    path('comment/<int:comment_id>/delete/', views.delete_comment, name='delete_comment'),
+    path('post/<int:post_id>/edit/', views.edit_post, name='edit_post'),
 ]

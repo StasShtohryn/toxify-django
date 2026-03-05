@@ -42,7 +42,9 @@
                             {% if note.post %}
                                 <a href="{% url 'post_detail' note.post.id %}" class="text-[10px] text-white/40 hover:text-white underline decoration-white/20 underline-offset-4 transition-colors font-bold uppercase">View Post</a>
                             {% else %}
-                                <span class="text-[10px] text-red-500/50 italic uppercase">[Deleted]</span>
+                                {% if "following" not in message %}
+                                    <span class="text-[10px] text-red-500/50 italic uppercase">[Deleted]</span>
+                                {% endif %}
                             {% endif %}
                         </div>
                     </div>

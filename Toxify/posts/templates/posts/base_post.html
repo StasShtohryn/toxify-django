@@ -45,6 +45,22 @@
                                     Report
                                 </button>
                             {% endif %}
+
+                            {% if post.userProfile.user == request.user %}
+                                <div class="h-px bg-white/5 my-1"></div>
+                                <a href="{% url 'edit_post' post.id %}"
+                                   class="flex items-center gap-3 px-3 py-2 text-[10px] text-white/50 hover:bg-white/5 hover:text-white transition-colors uppercase font-bold">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                    </svg>
+                                    Edit Post
+                                </a>
+                               <button onclick="openDeleteModal('{% url 'post_delete' post.id %}', 'THIS POST')"
+                                    class="flex items-center gap-3 px-3 py-2 text-[10px] text-red-500 hover:bg-red-500/10 transition-colors uppercase font-bold text-left">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/></svg>
+                                    Delete Post
+                                </button>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -633,4 +649,57 @@
             document.querySelectorAll('.post-dropdown').forEach(m => m.classList.add('hidden'));
         }
     });
+</script>
+
+
+
+<!--        ==================================================== ВИДАЛЕННЯ ПОСТА І КОМЕНТАРЯ  ====================================================-->
+<div id="delete-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+    <div class="bg-black border border-white/10 p-8 max-w-sm w-full text-center">
+        <h2 class="text-white font-black italic text-xl mb-2 uppercase tracking-tighter">Are you sure?</h2>
+        <p class="text-white/40 text-xs mb-6 uppercase tracking-widest">You are about to delete <span id="modal-item-name" class="text-white"></span>.</p>
+
+        <div class="flex gap-4">
+            <button onclick="closeDeleteModal()" class="flex-1 py-3 text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors">
+                Cancel
+            </button>
+
+            <form id="delete-form" method="POST" action="" class="flex-1">
+                {% csrf_token %}
+                <button type="submit" class="w-full py-3 bg-red-600 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-red-700 transition-colors">
+                    Delete Now
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function toggleMenu(id) {
+    const menu = document.getElementById(id);
+    menu.classList.toggle('hidden');
+
+    // Закриваємо меню, якщо клікнули десь інде
+    document.addEventListener('click', function closeMenu(e) {
+        if (!e.target.closest('button')) {
+            menu.classList.add('hidden');
+            document.removeEventListener('click', closeMenu);
+        }
+    });
+}
+
+function openDeleteModal(url, itemName) {
+    const modal = document.getElementById('delete-modal');
+    const form = document.getElementById('delete-form');
+
+    document.getElementById('modal-item-name').innerText = itemName;
+    form.action = url;
+
+    modal.classList.remove('hidden');
+}
+
+function closeDeleteModal() {
+    document.getElementById('delete-modal').classList.add('hidden');
+}
 </script>
