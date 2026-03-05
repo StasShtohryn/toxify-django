@@ -70,7 +70,7 @@
                             <div class="text-sm font-medium mb-1">{{ post.title }}</div>
                         {% endif %}
                         {% if post.body %}
-                            <p class="text-sm text-white/80 line-clamp-3">{{ post.body }}</p>
+                            <p class="text-sm text-white/80 line-clamp-3 linkify-mentions">{{ post.body }}</p>
                         {% endif %}
                         {% if post.hashtags.all %}
                             <div class="flex flex-wrap gap-2 mt-2">

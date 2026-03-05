@@ -1,3 +1,4 @@
+import re
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.auth.decorators import login_required
@@ -12,10 +13,41 @@ from . import forms
 from .forms import ReportForm
 from .models import Post, Hashtag, Comment, PostLike, Report, Reaction, CommentReaction, CommentLike
 from .models import Post, Hashtag, Comment, Notification
-from profiles.models import Profile, User
+from profiles.models import Profile, User, Repost
 
 
 # Create your views here.
+
+
+def _get_mentioned_usernames(text):
+    """Повертає множину username з тексту (@username)."""
+    if not text:
+        return set()
+    return set(re.findall(r'@(\w+)', text))
+
+
+def _create_mention_notifications(sender, body, post, context_type):
+    """Створює сповіщення для всіх згаданих через @ користувачів."""
+    usernames = _get_mentioned_usernames(body)
+    for username in usernames:
+        try:
+            recipient = User.objects.get(username__iexact=username)
+        except User.DoesNotExist:
+            continue
+        if recipient == sender:
+            continue
+        title_preview = (post.title[:20] + '...') if post and post.title else 'post'
+        if context_type == 'post':
+            msg = f"mentioned you in a post: '{title_preview}'"
+        else:
+            msg = f"mentioned you in a comment on '{title_preview}'"
+        Notification.objects.create(
+            recipient=recipient,
+            sender=sender,
+            post=post,
+            message=msg,
+        )
+
 
 class SearchView(TemplateView):
     template_name = 'posts/search.html'
@@ -57,20 +89,27 @@ class SearchView(TemplateView):
 
 
 def _add_liked_to_posts(request, posts):
-    """Додає post.user_has_liked для кожного поста."""
+    """Додає post.user_has_liked та post.user_has_reposted для кожного поста."""
     post_list = list(posts) if hasattr(posts, '__iter__') and not isinstance(posts, (str, dict)) else [posts]
     if not post_list:
         return
+    post_ids = [p.id for p in post_list]
     if request.user.is_authenticated:
         liked_ids = set(PostLike.objects.filter(
             profile=request.user.profile,
-            post_id__in=[p.id for p in post_list]
+            post_id__in=post_ids
+        ).values_list('post_id', flat=True))
+        reposted_ids = set(Repost.objects.filter(
+            profile=request.user.profile,
+            post_id__in=post_ids
         ).values_list('post_id', flat=True))
         for post in post_list:
             post.user_has_liked = post.id in liked_ids
+            post.user_has_reposted = post.id in reposted_ids
     else:
         for post in post_list:
             post.user_has_liked = False
+            post.user_has_reposted = False
 
 
 class PostsListView(ListView):
@@ -180,6 +219,13 @@ class PostCreateView(LoginRequiredMixin, CreateView):
                 tag, created = Hashtag.objects.get_or_create(name=tag_name)
                 self.object.hashtags.add(tag)
 
+        _create_mention_notifications(
+            sender=self.request.user,
+            body=self.object.body or '',
+            post=self.object,
+            context_type='post',
+        )
+
         messages.success(self.request, "Post created successfully!")
 
         return response
@@ -234,6 +280,13 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
                 post=self.post_obj,
                 message=msg
             )
+
+        _create_mention_notifications(
+            sender=sender,
+            body=new_comment.body or '',
+            post=self.post_obj,
+            context_type='comment',
+        )
 
     def form_valid(self, form):
         form.instance.commentProfile = self.commentProfile

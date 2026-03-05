@@ -1,4 +1,4 @@
-<div class="flex gap-3 items-start mb-4">
+<div id="comment-{{ comment.id }}" class="flex gap-3 items-start mb-4">
     <div class="w-8 h-8 shrink-0 overflow-hidden border border-white/10">
         {% if comment.commentProfile.avatar %}
             <img src="{{ comment.commentProfile.avatar }}" class="w-full h-full object-cover">
@@ -23,7 +23,7 @@
                 <div id="comment-dropdown-{{ comment.id }}"
                      class="hidden absolute right-0 top-full mt-1 w-36 bg-[#0a0a0a] border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.8)] z-[150] comment-dropdown">
                     <div class="flex flex-col py-1">
-                        <button onclick="shareComment('{{ comment.id }}')"
+                        <button onclick="shareComment('{{ comment.id }}', '{{ comment.post_to.id }}')"
                             class="flex items-center gap-3 px-3 py-2 text-[10px] text-white/50 hover:bg-white/5 hover:text-white transition-colors uppercase font-bold text-left">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
                             Share
@@ -40,7 +40,7 @@
                 </div>
             </div>
 
-            <p class="text-xs text-white/80 leading-snug mt-2 mb-2">{{ comment.body }}</p>
+            <p class="text-xs text-white/80 leading-snug mt-2 mb-2 linkify-mentions">{{ comment.body }}</p>
             {% if comment.images %}
                 <div class="mb-4 rounded-lg overflow-hidden border border-white/10">
                     <img src="{{ comment.images }}" alt="Post image" class="w-full h-auto object-cover max-h-[500px]">
@@ -375,9 +375,6 @@
 </script>
 
 
-
-
-
 <script>
 function toggleReplies(commentId, btn) {
     const extraDiv = document.getElementById('extra-replies-' + commentId);
@@ -393,4 +390,24 @@ function toggleReplies(commentId, btn) {
         }
     }
 }
+</script>
+
+
+<script>
+    function shareComment(commentId, postId) {
+        // Формуємо посилання: базовий URL + шлях до поста + якір на коментар
+        const shareUrl = `${window.location.origin}/post/${postId}/#comment-${commentId}`;
+
+        if (navigator.share) {
+            // Якщо це мобільний браузер або Safari (Web Share API)
+            navigator.share({
+                title: 'Toxify Comment',
+                text: ' у Toxify:',
+                url: shareUrl,
+            }).catch(console.error);
+        } else {
+            // Якщо Web Share не підтримується (наприклад, Chrome на ПК) — копіюємо в буфер
+            navigator.clipboard.writeText(shareUrl)
+        }
+    }
 </script>

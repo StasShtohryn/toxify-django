@@ -1,9 +1,11 @@
 from django.contrib import messages
 from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import DetailView, FormView
 
@@ -66,6 +68,12 @@ class ProfileDetailView(DetailView):
         posts = list(profile.posts.order_by("-created_at")[:20])
         _add_liked_to_posts(self.request, posts)
         context["posts"] = posts
+
+        # Репости профілю — пости, які цей юзер репостив
+        reposts_qs = Repost.objects.filter(profile=profile).select_related('post', 'post__userProfile', 'post__userProfile__user').order_by('-created_at')[:20]
+        reposted_posts = [r.post for r in reposts_qs]
+        _add_liked_to_posts(self.request, reposted_posts)
+        context["reposted_posts"] = reposted_posts
 
         context['replies'] = Comment.objects.filter(
             commentProfile=profile
@@ -201,7 +209,7 @@ class RepostToggleView(LoginRequiredMixin, View):
                 return JsonResponse(
                     {"error": "Не можна репостити власний пост."}, status=400
                 )
-            return redirect("post_detail", pk=pk)
+            return redirect("post_detail", post_id=pk)
 
         repost, created = Repost.objects.get_or_create(
             profile=request.user.profile,
@@ -221,8 +229,33 @@ class RepostToggleView(LoginRequiredMixin, View):
                 "reposts_count": post.reposted_by.count(),
             })
 
-        return redirect("post_detail", pk=pk)
+        next_url = request.POST.get("next") or request.META.get("HTTP_REFERER")
+        if next_url:
+            return redirect(next_url)
+        return redirect("post_detail", post_id=pk)
 
     @staticmethod
     def _is_ajax(request) -> bool:
         return request.headers.get("x-requested-with") == "XMLHttpRequest"
+
+
+@login_required
+def user_search_api(request):
+    """API для пошуку користувачів по @ згадках."""
+    q = request.GET.get("q", "").strip()
+    if not q:
+        return JsonResponse({"users": []})
+    profiles = Profile.objects.filter(
+        Q(user__username__icontains=q) | Q(name__icontains=q)
+    ).select_related("user").order_by("user__username")[:10]
+    return JsonResponse({
+        "users": [
+            {
+                "username": p.user.username,
+                "name": p.name or p.user.username,
+                "avatar": p.avatar or "",
+                "url": reverse("profile_detail", args=[p.user.username]),
+            }
+            for p in profiles
+        ]
+    })
