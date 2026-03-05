@@ -1,6 +1,10 @@
 {% extends 'main/base.html' %}
-
+{% load static %}
 {% block title %} Post by {{ post.userProfile.user.username }} {% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'posts/css/some.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="max-w-2xl mx-auto ml-4 mt-4">
@@ -31,6 +35,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.href = targetUrl;
             }
         });
+    }
+});
+
+
+window.addEventListener('load', () => {
+    if (window.location.hash) {
+        const commentId = window.location.hash;
+        const element = document.querySelector(commentId);
+        if (element) {
+            // Невелике запізнення, щоб сторінка встигла прогрузитися
+            setTimeout(() => {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 500);
+        }
     }
 });
 </script>
