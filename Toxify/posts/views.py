@@ -10,7 +10,7 @@ from django.db.models import Q
 from django.contrib import messages
 
 from . import forms
-from .forms import ReportForm
+from .forms import ReportForm, PostsForm
 from .models import Post, Hashtag, Comment, PostLike, Report, Reaction, CommentReaction, CommentLike
 from .models import Post, Hashtag, Comment, Notification
 from profiles.models import Profile, User, Repost
@@ -241,8 +241,8 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Post
-    template_name = 'posts/post_confirm_delete.html' # Твоя сторінка підтвердження
-    success_url = reverse_lazy('posts:post_list')
+    template_name = 'posts/post_confirm_delete.html'
+    success_url = reverse_lazy('posts')
 
     def test_func(self):
         post = self.get_object()
@@ -602,3 +602,53 @@ def toggle_comment_reaction(request, comment_id, reaction_type):
         )
 
     return redirect(request.META.get('HTTP_REFERER', '/'))
+
+
+@login_required
+def delete_comment(request, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id)
+    post_id = comment.post_to.id
+    if comment.commentProfile.user == request.user:
+        comment.delete()
+    return redirect('post_detail', post_id=post_id)
+
+
+@login_required
+def edit_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+
+    if post.userProfile.user != request.user:
+        return redirect('post_list')
+
+    if request.method == "POST":
+        # Передаємо інстанс, щоб Django знав, який пост оновлювати
+        form = PostsForm(request.POST, request.FILES, instance=post)
+
+        if form.is_valid():
+            updated_post = form.save(commit=False)
+
+            if 'images' in request.FILES:
+                updated_post.image = request.FILES['images']
+
+            updated_post.save()
+
+            hashtags_input = request.POST.get('hashtags_input', '')
+            if hashtags_input:
+                updated_post.hashtags.clear()
+                for tag_name in hashtags_input.split(','):
+                    tag_name = tag_name.strip().lower()
+                    if tag_name:
+                        from .models import Tag
+                        tag, created = Tag.objects.get_or_create(name=tag_name)
+                        updated_post.hashtags.add(tag)
+
+            return redirect('post_detail', post_id=updated_post.id)
+    else:
+        form = PostsForm(instance=post)
+        current_tags = ", ".join([tag.name for tag in post.hashtags.all()])
+
+    return render(request, 'posts/post-edit.html', {
+        'form': form,
+        'post': post,
+        'current_tags': current_tags
+    })
