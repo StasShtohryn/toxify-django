@@ -10,7 +10,7 @@ from django.contrib import messages
 
 from . import forms
 from .forms import ReportForm
-from .models import Post, Hashtag, Comment, PostLike, Report, Reaction
+from .models import Post, Hashtag, Comment, PostLike, Report, Reaction, CommentReaction, CommentLike
 from .models import Post, Hashtag, Comment, Notification
 from profiles.models import Profile, User
 
@@ -82,8 +82,17 @@ class PostsListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['is_detail'] = False
-        posts = list(context.get('posts', []))
+        user = self.request.user
+
+        posts = context['posts']
         _add_liked_to_posts(self.request, posts)
+        if user.is_authenticated:
+            profile = user.profile
+            for post in posts:
+                last_comment = post.get_last_main_comment()
+                if last_comment:
+                    last_comment.user_has_liked = last_comment.comment_likes.filter(profile=profile).exists()
+                    post.cached_last_comment = last_comment
         context['posts'] = posts
         return context
 
@@ -97,16 +106,42 @@ class PostDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['is_detail'] = True
+        user = self.request.user
+
         _add_liked_to_posts(self.request, [context['post']])
+        comments = list(
+            context['post'].post_comments.all().prefetch_related('comment_likes', 'replies')
+        )
+        if user.is_authenticated:
+            profile = user.profile
+            # Отримуємо всі коментарі цього поста
 
-        # Отримуємо URL, з якого прийшов користувач
-        referer = self.request.META.get('HTTP_REFERER')
+            for comment in comments:
+                comment.user_has_liked = comment.comment_likes.filter(profile=profile).exists()
+                for reply in comment.replies.all():
+                    reply.user_has_liked = reply.comment_likes.filter(profile=profile).exists()
 
-        # Якщо реферер є і він веде на наш сайт (а не на Google, наприклад), передаємо його
-        if referer and self.request.get_host() in referer:
-            context['back_url'] = referer
         else:
-            context['back_url'] = reverse('posts')  # Дефолт на головну
+            for comment in comments:
+                comment.user_has_liked = False
+                for reply in comment.replies.all():
+                    reply.user_has_liked = False
+
+
+        context['comments'] = comments
+
+        referer = self.request.META.get('HTTP_REFERER')
+        home_url = reverse('posts')
+
+        if referer and self.request.get_host() in referer:
+            current_path = self.request.path
+            forbidden_words = ['like', 'react', 'comment', 'delete', 'edit']
+            if any(word in referer for word in forbidden_words) or current_path in referer:
+                context['back_url'] = home_url
+            else:
+                context['back_url'] = referer
+        else:
+            context['back_url'] = home_url
 
         return context
 
@@ -275,15 +310,71 @@ def report_post(request, post_id):
                     recipient=post_author,
                     sender=None,
                     post=None,
-                    message=f"Your post '{deleted_post_title}...' was deleted due to big amount of community reports!"
+                    message=f"Your post '{deleted_post_title}' was deleted due to big amount of community reports!"
                 )
-                messages.warning(request, "THANK YOU FOR BUILDING OUR APP BETTER! Post removed by community safety system.")
+                messages.info(request, "THANK YOU FOR BUILDING OUR APP BETTER! Post removed by community safety system.")
                 return redirect(request.META.get('HTTP_REFERER', '/'))
 
             messages.success(request, f"Report recorded. ({report_count}/{MAX_REPORTS})")
             return redirect(request.META.get('HTTP_REFERER', '/'))
 
     return redirect(request.META.get('HTTP_REFERER', '/'))
+
+
+
+MAX_COMMENT_REPORTS = 3
+@login_required
+def report_comment(request, comment_id):
+    reporter = request.user
+    comment = get_object_or_404(Comment, id=comment_id)
+    comment_author_profile = comment.commentProfile
+    comment_author = comment_author_profile.user
+
+    if request.user == comment_author:
+        messages.warning(request, "Reporting yourself? That's next-level toxicity.")
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+
+    if Report.objects.filter(reporter=request.user, comment=comment).exists():
+        messages.warning(request, "You already reported this comment.")
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+
+    if request.method == 'POST':
+        reason_text = request.POST.get('reason', 'No specific reason provided.')
+
+        Report.objects.create(
+            reporter=request.user,
+            comment=comment,
+            reason=reason_text
+        )
+
+        comment_author_profile.reputation_score -= 3
+        comment_author_profile.recalculate_toxicity()
+        comment_author_profile.save()
+
+        report_count = Report.objects.filter(comment=comment).count()
+
+        comment_body_preview = comment.body[:20]
+        if report_count >= MAX_COMMENT_REPORTS:
+            comment.delete()
+
+            Notification.objects.create(
+                recipient=comment_author,
+                sender=None,
+                post=None,
+                message=f"Your comment '{comment_body_preview}' was removed due to community reports."
+            )
+            messages.info(request, "THANK YOU FOR BUILDING OUR APP BETTER! Toxic comment was removed.")
+        else:
+            Notification.objects.create(
+                recipient=comment_author,
+                sender=reporter,
+                post=None,
+                message=f" report your comment '{comment_body_preview}...'\nReason:{reason_text}"
+            )
+            messages.success(request, f"Comment report recorded ({report_count}/{MAX_COMMENT_REPORTS}).")
+
+    return redirect(request.META.get('HTTP_REFERER', '/'))
+
 
 
 @login_required
@@ -330,6 +421,36 @@ class LikePostToggleView(LoginRequiredMixin, View):
         return redirect(redirect_url)
 
 
+
+class LikeCommentToggleView(LoginRequiredMixin, View):
+    """POST: поставити або зняти лайк з коментаря."""
+    login_url = '/profile/login/'
+
+    def post(self, request, comment_id):
+        comment = get_object_or_404(Comment, pk=comment_id)
+        profile = request.user.profile
+
+        like, created = CommentLike.objects.get_or_create(profile=profile, comment=comment)
+        if not created:
+            like.delete()
+            liked = False
+
+        else:
+            liked = True
+            author_profile = comment.commentProfile
+
+            if author_profile != profile:
+                Notification.objects.create(
+                    recipient=author_profile.user,
+                    sender=request.user,
+                    post=comment.post_to,
+                    message=f"liked your toxic comment: '{comment.body[:20]}...'"
+                )
+
+        redirect_url = request.POST.get('next') or request.META.get('HTTP_REFERER')
+        return redirect(redirect_url)
+
+
 @login_required
 def toggle_reaction(request, post_id, reaction_type):
     post = get_object_or_404(Post, id=post_id)
@@ -341,9 +462,9 @@ def toggle_reaction(request, post_id, reaction_type):
         return redirect(request.META.get('HTTP_REFERER', '/'))
 
     REACTION_WEIGHTS = {
-        'based': 2,
+        'based': 4,
         'toxic': -2,
-        'cringe': -1,
+        'cringe': -5,
     }
 
     existing_reaction = Reaction.objects.filter(user=user, post=post).first()
@@ -378,6 +499,53 @@ def toggle_reaction(request, post_id, reaction_type):
             sender=user,
             post=post,
             message=f" mark your post '{post.title}...' as {reaction_type.upper()}"
+        )
+
+    return redirect(request.META.get('HTTP_REFERER', '/'))
+
+
+@login_required
+def toggle_comment_reaction(request, comment_id, reaction_type):
+    comment = get_object_or_404(Comment, id=comment_id)
+    author_profile = comment.commentProfile
+    user = request.user
+
+    if author_profile.user == user:
+        messages.warning(request, "You can't rate your own comment!")
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+
+    REACTION_WEIGHTS = {
+        'based': 4,
+        'toxic': -2,
+        'cringe': -5
+    }
+
+    existing_reaction = CommentReaction.objects.filter(user=user, comment=comment).first()
+    send_notification = True
+
+    if existing_reaction:
+        if existing_reaction.type == reaction_type:
+            author_profile.reputation_score -= REACTION_WEIGHTS[reaction_type]
+            existing_reaction.delete()
+            send_notification = False
+        else:
+            author_profile.reputation_score -= REACTION_WEIGHTS[existing_reaction.type]
+            author_profile.reputation_score += REACTION_WEIGHTS[reaction_type]
+            existing_reaction.type = reaction_type
+            existing_reaction.save()
+    else:
+        CommentReaction.objects.create(user=user, comment=comment, type=reaction_type)
+        author_profile.reputation_score += REACTION_WEIGHTS[reaction_type]
+
+    author_profile.recalculate_toxicity()
+    author_profile.save()
+
+    if send_notification:
+        Notification.objects.create(
+            recipient=author_profile.user,
+            sender=user,
+            post=comment.post_to,
+            message=f"marked your comment as {reaction_type.upper()}"
         )
 
     return redirect(request.META.get('HTTP_REFERER', '/'))

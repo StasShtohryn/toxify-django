@@ -75,27 +75,40 @@
 
 
     <div class="flex border-b border-white/10">
-      <button class="flex-1 py-4 text-xs font-bold relative group">
-        <span class="opacity-40 group-hover:opacity-100 transition-opacity">POSTS</span>
-        <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-white"></div>
+      <button onclick="switchTab('posts')" id="tab-posts" class="flex-1 py-4 text-xs font-bold relative group">
+        <span class="tab-label opacity-100 transition-opacity">POSTS</span>
+        <div class="tab-indicator absolute bottom-0 left-0 right-0 h-0.5 bg-white"></div>
       </button>
-      <button class="flex-1 py-4 text-xs font-bold relative group">
-        <span class="opacity-40 group-hover:opacity-100 transition-opacity">REPLIES</span>
+
+      <button onclick="switchTab('replies')" id="tab-replies" class="flex-1 py-4 text-xs font-bold relative group">
+        <span class="tab-label opacity-40 group-hover:opacity-100 transition-opacity">REPLIES</span>
+        <div class="tab-indicator absolute bottom-0 left-0 right-0 h-0.5 bg-white hidden"></div>
       </button>
-      <button class="flex-1 py-4 text-xs font-bold relative group">
-        <span class="opacity-40 group-hover:opacity-100 transition-opacity">REPOSTS</span>
+
+      <button onclick="switchTab('reposts')" id="tab-reposts" class="flex-1 py-4 text-xs font-bold relative group">
+        <span class="tab-label opacity-40 group-hover:opacity-100 transition-opacity">REPOSTS</span>
+        <div class="tab-indicator absolute bottom-0 left-0 right-0 h-0.5 bg-white hidden"></div>
       </button>
     </div>
 
     <div class="divide-y divide-white/10">
-      {% if not profile.posts.exists %}
-        <h2 class="text-center uppercase mt-2">no posts</h2>
+        <div id="posts-section" class="divide-y divide-white/10 hidden">
+            {% if not posts %}
+                <h2 class="text-center text-xs uppercase tracking-widest text-white/20 py-10">no posts yet</h2>
+            {% else %}
+                {% for post in posts %}
+                    {% include 'posts/base_post.html' with post=post %}
+                {% endfor %}
+            {% endif %}
+        </div>
 
-      {% else %}
-        {% for post in posts %}
-          {% include 'posts/base_post.html' with post=post %}
-        {% endfor %}
-      {% endif %}
+        <div id="replies-section" class="divide-y divide-white/10 hidden">
+            {% include 'posts/profile_replies.html' %}
+        </div>
+
+        <div id="reposts-section" class="divide-y divide-white/10 hidden">
+            <h2 class="text-center text-xs uppercase tracking-widest text-white/20 py-10">no reposts yet</h2>
+        </div>
     </div>
 </div>
 
@@ -161,5 +174,58 @@
 
 
 
+
+
+<!-- Перемикання між вкладками -->
+<script>
+// 1. Оголошуємо функцію глобально
+window.switchTab = function(tabName) {
+    console.log("Switching to tab:", tabName);
+
+    const tabs = ['posts', 'replies', 'reposts'];
+
+    tabs.forEach(tab => {
+        const section = document.getElementById(`${tab}-section`);
+        const tabBtn = document.getElementById(`tab-${tab}`);
+
+        if (section && tabBtn) {
+            if (tab === tabName) {
+                section.classList.remove('hidden');
+                tabBtn.querySelector('.tab-label').classList.replace('opacity-40', 'opacity-100');
+                tabBtn.querySelector('.tab-indicator').classList.remove('hidden');
+            } else {
+                section.classList.add('hidden');
+                tabBtn.querySelector('.tab-label').classList.replace('opacity-100', 'opacity-40');
+                tabBtn.querySelector('.tab-indicator').classList.add('hidden');
+            }
+        }
+    });
+
+    // Оновлюємо хеш та сховище
+    if (history.pushState) {
+        history.pushState(null, null, '#' + tabName);
+    } else {
+        window.location.hash = tabName;
+    }
+    sessionStorage.setItem('last_profile_tab', tabName);
+}
+
+// 2. Ініціалізація при завантаженні
+window.addEventListener('load', () => {
+    // Перевіряємо спочатку хеш в URL, потім sessionStorage
+    const hash = window.location.hash.replace('#', '');
+    const savedTab = sessionStorage.getItem('last_profile_tab');
+
+    console.log("Found hash:", hash, "Found saved tab:", savedTab);
+
+    if (hash && ['posts', 'replies', 'reposts'].includes(hash)) {
+        window.switchTab(hash);
+    } else if (savedTab && ['posts', 'replies', 'reposts'].includes(savedTab)) {
+        window.switchTab(savedTab);
+    } else {
+        window.switchTab('posts');
+    }
+});
+</script>
 
 {% endblock %}

@@ -1,0 +1,70 @@
+<div class="divide-y divide-white/5">
+    {% for comment in replies %}
+        <div class="p-6 transition-all hover:bg-white/[0.02] group">
+
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2 text-[10px] uppercase tracking-widest text-white/30">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="opacity-50"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <span>Відповідь до:</span>
+                    <span class="text-white/60 font-bold truncate max-w-[200px]">"{{ comment.post_to.title }}"</span>
+                </div>
+
+                <a href="{% url 'post_detail' comment.post_to.id %}"
+                   class="text-[10px] font-black uppercase tracking-tighter text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1">
+                    View Post
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+            </div>
+
+            <div class="flex gap-3 items-start">
+                <div class="w-8 h-8 shrink-0 overflow-hidden border border-white/10 bg-white/5">
+                    {% if comment.commentProfile.avatar %}
+                        <img src="{{ comment.commentProfile.avatar }}" class="w-full h-full object-cover">
+                    {% else %}
+                        <div class="w-full h-full flex items-center justify-center text-[10px] text-white/20">?</div>
+                    {% endif %}
+                </div>
+
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                        <a href="{% url 'profile_detail' comment.commentProfile.user.username %}"
+                           class="font-bold text-xs hover:underline text-green-400">
+                            {{ comment.commentProfile.user.username }}
+                        </a>
+                        <span class="text-[10px] text-white/20">{{ comment.created_at|timesince }} тому</span>
+                    </div>
+
+                    <p class="text-xs text-white/80 leading-snug">
+                        {{ comment.body }}
+                    </p>
+
+                    {% if comment.images %}
+                        <div class="mt-3 rounded-lg overflow-hidden border border-white/10 max-w-sm">
+                            <img src="{{ comment.images }}" class="w-full h-auto object-cover max-h-60 opacity-90">
+                        </div>
+                    {% endif %}
+
+                    <div class="mt-3 flex gap-4">
+                        <div class="flex items-center gap-1 text-[10px] text-white/20 font-mono">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                            {{ comment.comment_likes.count }}
+                        </div>
+                        <div class="flex items-center gap-1 text-[10px] text-white/20 font-mono">
+                            Toxics: {{ comment.toxic_count }}
+                        </div>
+                        <div class="flex items-center gap-1 text-[10px] text-white/20 font-mono">
+                            Cringes: {{ comment.cringe_count }}
+                        </div>
+                        <div class="flex items-center gap-1 text-[10px] text-white/20 font-mono">
+                            Bases: {{ comment.based_count }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="py-20 text-center">
+            <p class="text-xs uppercase tracking-[0.2em] text-white/20 italic">No verbal toxicity found here...</p>
+        </div>
+    {% endfor %}
+</div>

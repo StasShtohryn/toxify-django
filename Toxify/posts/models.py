@@ -4,6 +4,8 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
 
+from profiles.models import Profile
+
 SIZE = (1200, 1200)
 
 
@@ -60,6 +62,50 @@ class Post(models.Model):
 
 
 
+class Comment(models.Model):
+    commentProfile = models.ForeignKey(
+        "profiles.Profile",  # ← рядок замість імпорту
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+    post_to = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='post_comments')
+    title = models.CharField(max_length=100)
+    body = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    # Нескінченні коментарі, поле для посилання на самого себе
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='replies'
+    )
+    images = models.URLField(null=True, blank=True)
+
+    @property
+    def toxic_count(self):
+        return self.comment_reactions.filter(type='toxic').count()
+
+    @property
+    def cringe_count(self):
+        return self.comment_reactions.filter(type='cringe').count()
+
+    @property
+    def based_count(self):
+        return self.comment_reactions.filter(type='based').count()
+
+    def user_current_reaction(self, user):
+        if user.is_anonymous: return None
+        reaction = self.comment_reactions.filter(user=user).first()
+        return reaction.type if reaction else None
+
+    def is_liked_by(self, user):
+        if user.is_anonymous:
+            return False
+        # Перевіряємо наявність лайка саме для цього юзера
+        return self.comment_likes.filter(profile=user.profile).exists()
+
+
 
 class PostLike(models.Model):
     """Лайк поста. Один юзер — один лайк на пост."""
@@ -78,6 +124,15 @@ class PostLike(models.Model):
     class Meta:
         unique_together = ('profile', 'post')
 
+
+
+class CommentLike(models.Model):
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='comment_likes')
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='comment_likes')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('profile', 'comment')
 
 
 class Reaction(models.Model):
@@ -101,27 +156,26 @@ class Reaction(models.Model):
 
 
 
-class Comment(models.Model):
-    commentProfile = models.ForeignKey(
-        "profiles.Profile",  # ← рядок замість імпорту
+class CommentReaction(models.Model):
+    REACTION_CHOICES = [
+        ('toxic', 'Toxic'),
+        ('cringe', 'Cringe'),
+        ('based', 'Based'),
+    ]
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='comments'
+        related_name='comment_reactions'
     )
-    post_to = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='post_comments')
-    title = models.CharField(max_length=100)
-    body = models.TextField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    # Нескінченні коментарі, поле для посилання на самого себе
-    parent = models.ForeignKey(
-        'self',
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name='replies'
-    )
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='comment_reactions') # Зв'язок з коментарем!
+    type = models.CharField(max_length=10, choices=REACTION_CHOICES)
+
+    class Meta:
+        unique_together = ('user', 'comment')
 
 
-    images = models.URLField(null=True, blank=True)
+
 
 
 class Report(models.Model):
@@ -133,17 +187,31 @@ class Report(models.Model):
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
-        related_name='reports'
+        related_name='reports',
+        null=True,
+        blank=True
+    )
+    comment = models.ForeignKey(
+        Comment,
+        on_delete=models.CASCADE,
+        related_name='reports',
+        null=True,
+        blank=True
     )
     reason = models.TextField(max_length=500, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     # Заборона на повторну скаргу
     class Meta:
-        unique_together = ('reporter', 'post')
+        unique_together = (
+            ('reporter', 'post'),
+            ('reporter', 'comment')
+        )
 
     def __str__(self):
-        return f"{self.reporter} reported {self.post.title}"
+        if self.post:
+            return f"{self.reporter} reported post: {self.post.title}"
+        return f"{self.reporter} reported comment: {self.comment.id}"
 
 
 
