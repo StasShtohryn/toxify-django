@@ -1,9 +1,11 @@
 from django.contrib import messages
 from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import DetailView, FormView
 
@@ -226,3 +228,25 @@ class RepostToggleView(LoginRequiredMixin, View):
     @staticmethod
     def _is_ajax(request) -> bool:
         return request.headers.get("x-requested-with") == "XMLHttpRequest"
+
+
+@login_required
+def user_search_api(request):
+    """API для пошуку користувачів по @ згадках."""
+    q = request.GET.get("q", "").strip()
+    if not q:
+        return JsonResponse({"users": []})
+    profiles = Profile.objects.filter(
+        Q(user__username__icontains=q) | Q(name__icontains=q)
+    ).select_related("user").order_by("user__username")[:10]
+    return JsonResponse({
+        "users": [
+            {
+                "username": p.user.username,
+                "name": p.name or p.user.username,
+                "avatar": p.avatar or "",
+                "url": reverse("profile_detail", args=[p.user.username]),
+            }
+            for p in profiles
+        ]
+    })

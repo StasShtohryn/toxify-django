@@ -113,16 +113,19 @@
     </div>
 </div>
 
-<!-- Модальне вікно підписників -->
+<!-- Модальне вікно підписників / підписок -->
 <div id="followersModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 ease-out">
     <div class="w-full max-w-md bg-black border border-white/20 p-6 max-h-[70vh] flex flex-col">
         <div class="flex justify-between items-center mb-4">
-            <span class="font-bold text-sm">Підписники</span>
+            <div class="flex gap-6 border-b border-white/10 -mb-4">
+                <button type="button" class="modal-tab modal-tab-active relative pb-3 border-b-2 border-white font-bold text-sm cursor-pointer transition-all duration-200" data-tab="followers">FOLLOWERS</button>
+                <button type="button" class="modal-tab relative pb-3 border-b-2 border-transparent text-sm text-white/60 hover:text-white hover:border-white/50 cursor-pointer transition-all duration-200" data-tab="following">FOLLOWING</button>
+            </div>
             <button type="button" id="closeFollowersModal" class="text-white/40 hover:text-white transition-colors cursor-pointer">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
             </button>
         </div>
-        <div class="overflow-y-auto flex-1 space-y-2">
+        <div id="modal-followers-content" class="overflow-y-auto flex-1 space-y-2 modal-tab-content">
             {% for follower in profile.followers.all %}
                 <a href="{% url 'profile_detail' follower.user.username %}" class="flex items-center gap-3 p-2 hover:bg-white/5 transition-colors rounded">
                     <div class="w-10 h-10 border border-white/20 bg-white/5 shrink-0 overflow-hidden rounded-full">
@@ -136,7 +139,24 @@
                     </div>
                 </a>
             {% empty %}
-                <p class="text-sm text-white/40 py-4">Ще ніхто не підписаний</p>
+                <p class="text-sm text-white/40 py-4">No one has signed yet</p>
+            {% endfor %}
+        </div>
+        <div id="modal-following-content" class="overflow-y-auto flex-1 space-y-2 modal-tab-content hidden">
+            {% for followed in profile.following.all %}
+                <a href="{% url 'profile_detail' followed.user.username %}" class="flex items-center gap-3 p-2 hover:bg-white/5 transition-colors rounded">
+                    <div class="w-10 h-10 border border-white/20 bg-white/5 shrink-0 overflow-hidden rounded-full">
+                        {% if followed.avatar %}
+                            <img src="{{ followed.avatar }}" alt="" class="w-full h-full object-cover" referrerpolicy="no-referrer"/>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <div class="font-bold text-sm">{% firstof followed.name followed.user.username %}</div>
+                        <div class="text-xs text-white/40">@{{ followed.user.username }}</div>
+                    </div>
+                </a>
+            {% empty %}
+                <p class="text-sm text-white/40 py-4">Not subscribed to anyone yet</p>
             {% endfor %}
         </div>
     </div>
@@ -147,13 +167,35 @@
     const openBtn = document.getElementById('openFollowersModal');
     const closeBtn = document.getElementById('closeFollowersModal');
     const modal = document.getElementById('followersModal');
+    const modalTabs = document.querySelectorAll('.modal-tab');
+    const followersContent = document.getElementById('modal-followers-content');
+    const followingContent = document.getElementById('modal-following-content');
+
+    function switchModalTab(tabName) {
+        modalTabs.forEach(tab => {
+            const isActive = tab.dataset.tab === tabName;
+            tab.classList.toggle('modal-tab-active', isActive);
+            tab.classList.toggle('text-white/60', !isActive);
+            tab.classList.toggle('font-bold', isActive);
+            tab.classList.toggle('border-white', isActive);
+            tab.classList.toggle('border-transparent', !isActive);
+            tab.classList.toggle('hover:border-white/50', !isActive);
+        });
+        if (followersContent) followersContent.classList.toggle('hidden', tabName !== 'followers');
+        if (followingContent) followingContent.classList.toggle('hidden', tabName !== 'following');
+    }
 
     if (openBtn && modal) {
         openBtn.addEventListener('click', () => {
+            switchModalTab('followers');
             modal.classList.remove('opacity-0', 'pointer-events-none');
             modal.classList.add('opacity-100');
         });
     }
+
+    modalTabs.forEach(tab => {
+        tab.addEventListener('click', () => switchModalTab(tab.dataset.tab));
+    });
 
     if (closeBtn && modal) {
         closeBtn.addEventListener('click', () => {

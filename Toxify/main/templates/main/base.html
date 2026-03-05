@@ -85,8 +85,14 @@
                             <input type="text" name="title" required placeholder="TITLE..."
                                    class="w-full bg-transparent border-b border-white/10 text-sm mb-3 py-1 focus:outline-none text-white">
 
-                            <textarea name="body" placeholder="WHAT'S ON YOUR MIND? (BE TOXIC)"
-                                      class="w-full bg-transparent border-none text-sm focus:outline-none min-h-[120px] text-white/80"></textarea>
+                            <div class="relative mention-input-wrapper">
+                                <textarea name="body" placeholder="WHAT'S ON YOUR MIND? (BE TOXIC) Type @ to mention users"
+                                          class="mentionable-textarea w-full bg-transparent border-none text-sm focus:outline-none min-h-[120px] text-white/80"></textarea>
+                                <div class="mention-dropdown absolute left-0 right-0 top-full mt-1 hidden max-h-48 overflow-y-auto bg-black border border-white/20 shadow-lg z-[110]">
+                                    <div class="mention-dropdown-list p-1 space-y-0.5"></div>
+                                    <p class="mention-dropdown-empty hidden text-xs text-white/40 p-3">No users found</p>
+                                </div>
+                            </div>
 
                             <div class="mt-2 border-t border-white/5 pt-2">
                                 <label class="text-[10px] text-white/30 block mb-1">ADD IMAGE</label>
@@ -141,6 +147,67 @@
                 }
             });
         }
+
+        // @ mentions (пости + коментарі)
+        const searchUrl = "{% url 'user_search_api' %}";
+        function escapeHtml(s) {
+            const d = document.createElement('div');
+            d.textContent = s;
+            return d.innerHTML;
+        }
+        function initMention(ta, dropdown, listEl, emptyEl) {
+            let debounceTimer;
+            ta.addEventListener('input', function() {
+                const val = this.value;
+                const caretPos = this.selectionStart;
+                const textBefore = val.slice(0, caretPos);
+                const lastAt = textBefore.lastIndexOf('@');
+                if (lastAt === -1) { dropdown.classList.add('hidden'); return; }
+                const afterAt = textBefore.slice(lastAt + 1);
+                if (/\s/.test(afterAt)) { dropdown.classList.add('hidden'); return; }
+                const query = afterAt;
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    fetch(searchUrl + '?q=' + encodeURIComponent(query)).then(r => r.json()).then(data => {
+                        listEl.innerHTML = '';
+                        emptyEl.classList.add('hidden');
+                        if (!data.users || data.users.length === 0) { emptyEl.classList.remove('hidden'); }
+                        else {
+                            data.users.forEach(u => {
+                                const a = document.createElement('a');
+                                a.href = '#'; a.className = 'flex items-center gap-2 p-2 hover:bg-white/10 transition-colors cursor-pointer block';
+                                a.dataset.username = u.username;
+                                a.innerHTML = `<div class="w-8 h-8 rounded-full border border-white/20 bg-white/5 overflow-hidden shrink-0">${u.avatar ? `<img src="${u.avatar}" alt="" class="w-full h-full object-cover" referrerpolicy="no-referrer"/>` : ''}</div><div class="text-left"><div class="font-bold text-xs">${escapeHtml(u.name)}</div><div class="text-[10px] text-white/40">@${escapeHtml(u.username)}</div></div>`;
+                                a.addEventListener('click', (e) => {
+                                    e.preventDefault();
+                                    const before = val.slice(0, lastAt);
+                                    const after = val.slice(caretPos);
+                                    ta.value = before + '@' + u.username + ' ' + after;
+                                    ta.focus();
+                                    ta.setSelectionRange(before.length + u.username.length + 2, before.length + u.username.length + 2);
+                                    dropdown.classList.add('hidden');
+                                });
+                                listEl.appendChild(a);
+                            });
+                        }
+                        dropdown.classList.remove('hidden');
+                    });
+                }, 150);
+            });
+            dropdown.addEventListener('click', (e) => e.stopPropagation());
+        }
+        document.querySelectorAll('.mentionable-textarea').forEach(ta => {
+            const wrap = ta.closest('.mention-input-wrapper');
+            if (wrap && searchUrl) {
+                const dd = wrap.querySelector('.mention-dropdown');
+                const list = wrap.querySelector('.mention-dropdown-list');
+                const empty = wrap.querySelector('.mention-dropdown-empty');
+                if (dd && list && empty) initMention(ta, dd, list, empty);
+            }
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') document.querySelectorAll('.mention-dropdown:not(.hidden)').forEach(el => el.classList.add('hidden'));
+        });
     });
 </script>
 
@@ -207,6 +274,31 @@
                 }
             });
         }
+    </script>
+
+    <script>
+        (function() {
+            function escapeHtml(s) {
+                const div = document.createElement('div');
+                div.textContent = s;
+                return div.innerHTML;
+            }
+            function linkifyMentions() {
+                document.querySelectorAll('.linkify-mentions').forEach(function(el) {
+                    if (el.dataset.linkified) return;
+                    const text = el.textContent || '';
+                    const escaped = escapeHtml(text);
+                    const linked = escaped.replace(/@(\w+)/g, '<a href="/profile/users/$1/" class="text-green-400 hover:text-green-300 hover:underline font-medium">@$1</a>');
+                    el.innerHTML = linked;
+                    el.dataset.linkified = '1';
+                });
+            }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', linkifyMentions);
+            } else {
+                linkifyMentions();
+            }
+        })();
     </script>
 
 </body>

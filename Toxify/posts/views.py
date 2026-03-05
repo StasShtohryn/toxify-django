@@ -1,3 +1,4 @@
+import re
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.auth.decorators import login_required
@@ -16,6 +17,37 @@ from profiles.models import Profile, User
 
 
 # Create your views here.
+
+
+def _get_mentioned_usernames(text):
+    """Повертає множину username з тексту (@username)."""
+    if not text:
+        return set()
+    return set(re.findall(r'@(\w+)', text))
+
+
+def _create_mention_notifications(sender, body, post, context_type):
+    """Створює сповіщення для всіх згаданих через @ користувачів."""
+    usernames = _get_mentioned_usernames(body)
+    for username in usernames:
+        try:
+            recipient = User.objects.get(username__iexact=username)
+        except User.DoesNotExist:
+            continue
+        if recipient == sender:
+            continue
+        title_preview = (post.title[:20] + '...') if post and post.title else 'post'
+        if context_type == 'post':
+            msg = f"mentioned you in a post: '{title_preview}'"
+        else:
+            msg = f"mentioned you in a comment on '{title_preview}'"
+        Notification.objects.create(
+            recipient=recipient,
+            sender=sender,
+            post=post,
+            message=msg,
+        )
+
 
 class SearchView(TemplateView):
     template_name = 'posts/search.html'
@@ -180,6 +212,13 @@ class PostCreateView(LoginRequiredMixin, CreateView):
                 tag, created = Hashtag.objects.get_or_create(name=tag_name)
                 self.object.hashtags.add(tag)
 
+        _create_mention_notifications(
+            sender=self.request.user,
+            body=self.object.body or '',
+            post=self.object,
+            context_type='post',
+        )
+
         messages.success(self.request, "Post created successfully!")
 
         return response
@@ -234,6 +273,13 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
                 post=self.post_obj,
                 message=msg
             )
+
+        _create_mention_notifications(
+            sender=sender,
+            body=new_comment.body or '',
+            post=self.post_obj,
+            context_type='comment',
+        )
 
     def form_valid(self, form):
         form.instance.commentProfile = self.commentProfile
