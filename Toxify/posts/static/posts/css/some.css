@@ -1,0 +1,20 @@
+#comment-{{ comment.id }}:target,
+[id^="comment-"]:target {
+    border-left: 3px solid #ff4444 !important;
+    animation: pulse-red 1.5s ease-in-out 2 forwards;
+}
+
+@keyframes pulse-red {
+    0% {
+        background-color: rgba(255, 68, 68, 0.2);
+        box-shadow: 0 0 15px rgba(255, 68, 68, 0.3);
+    }
+    50% {
+        background-color: rgba(255, 68, 68, 0.4);
+        box-shadow: 0 0 30px rgba(255, 68, 68, 0.6);
+    }
+    100% {
+        background-color: transparent;
+        box-shadow: 0 0 0px transparent;
+    }
+}
