@@ -40,7 +40,7 @@
                 </div>
             </div>
 
-            <p class="text-xs text-white/80 leading-snug mt-2 mb-2">{{ comment.body }}</p>
+            <p class="text-xs text-white/80 leading-snug mt-2 mb-2 linkify-mentions">{{ comment.body }}</p>
             {% if comment.images %}
                 <div class="mb-4 rounded-lg overflow-hidden border border-white/10">
                     <img src="{{ comment.images }}" alt="Post image" class="w-full h-auto object-cover max-h-[500px]">

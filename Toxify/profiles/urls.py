@@ -1,6 +1,6 @@
 from django.contrib.auth.views import LogoutView, LoginView
 from django.urls import path
-from .views import RegisterView, ProfileDetailView, ProfileEditView, FollowToggleView, RepostToggleView
+from .views import RegisterView, ProfileDetailView, ProfileEditView, FollowToggleView, RepostToggleView, user_search_api
 from .forms import RegisterForm, LoginForm  # або додати LoginForm до існуючого імпорту
 
 urlpatterns = [
@@ -19,4 +19,6 @@ urlpatterns = [
     path("users/<str:username>/follow/", FollowToggleView.as_view(), name="follow_toggle"),
 
     path("posts/<int:pk>/repost/", RepostToggleView.as_view(), name="repost_toggle"),
+
+    path("api/users/search/", user_search_api, name="user_search_api"),
 ]

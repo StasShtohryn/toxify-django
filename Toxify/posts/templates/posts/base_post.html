@@ -56,9 +56,7 @@
                 </h2>
             {% endif %}
 
-            <p class="text-sm leading-relaxed my-2 text-white/90">
-                {{post.body}}
-            </p>
+            <p class="text-sm leading-relaxed my-2 text-white/90 linkify-mentions">{{ post.body }}</p>
 
             {% if post.images %}
                 <div class="mb-4 rounded-lg overflow-hidden border border-white/10">
@@ -368,8 +366,14 @@
                     <input type="text" name="title" required placeholder="TITLE..."
                            class="w-full bg-transparent border-b border-white/10 text-sm mb-3 py-1 focus:outline-none text-white">
 
-                    <textarea name="body" placeholder="WHAT'S ON YOUR MIND? (BE TOXIC)"
-                              class="w-full bg-transparent border-none text-sm focus:outline-none min-h-[120px] text-white/80"></textarea>
+                    <div class="relative mention-input-wrapper">
+                        <textarea name="body" placeholder="WHAT'S ON YOUR MIND? (BE TOXIC) Type @ to mention users"
+                                  class="mentionable-textarea w-full bg-transparent border-none text-sm focus:outline-none min-h-[120px] text-white/80"></textarea>
+                        <div class="mention-dropdown absolute left-0 right-0 top-full mt-1 hidden max-h-48 overflow-y-auto bg-black border border-white/20 shadow-lg z-[110]">
+                            <div class="mention-dropdown-list p-1 space-y-0.5"></div>
+                            <p class="mention-dropdown-empty hidden text-xs text-white/40 p-3">No users found</p>
+                        </div>
+                    </div>
 
                     <div class="mt-2 border-t border-white/5 pt-2">
                         <label class="text-[10px] text-white/30 block mb-1">ADD IMAGE</label>
