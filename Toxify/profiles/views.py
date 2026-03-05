@@ -69,6 +69,12 @@ class ProfileDetailView(DetailView):
         _add_liked_to_posts(self.request, posts)
         context["posts"] = posts
 
+        # Репости профілю — пости, які цей юзер репостив
+        reposts_qs = Repost.objects.filter(profile=profile).select_related('post', 'post__userProfile', 'post__userProfile__user').order_by('-created_at')[:20]
+        reposted_posts = [r.post for r in reposts_qs]
+        _add_liked_to_posts(self.request, reposted_posts)
+        context["reposted_posts"] = reposted_posts
+
         context['replies'] = Comment.objects.filter(
             commentProfile=profile
         ).select_related('post_to').order_by('-created_at')
@@ -203,7 +209,7 @@ class RepostToggleView(LoginRequiredMixin, View):
                 return JsonResponse(
                     {"error": "Не можна репостити власний пост."}, status=400
                 )
-            return redirect("post_detail", pk=pk)
+            return redirect("post_detail", post_id=pk)
 
         repost, created = Repost.objects.get_or_create(
             profile=request.user.profile,
@@ -223,7 +229,10 @@ class RepostToggleView(LoginRequiredMixin, View):
                 "reposts_count": post.reposted_by.count(),
             })
 
-        return redirect("post_detail", pk=pk)
+        next_url = request.POST.get("next") or request.META.get("HTTP_REFERER")
+        if next_url:
+            return redirect(next_url)
+        return redirect("post_detail", post_id=pk)
 
     @staticmethod
     def _is_ajax(request) -> bool:
