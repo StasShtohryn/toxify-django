@@ -1,5 +1,6 @@
 import requests
 import os
+from vercel import blob
 
 url = "https://ogulkughunqoppwg.public.blob.vercel-storage.com/"
 
@@ -46,13 +47,9 @@ def delete_from_vercel_blob(url: str) -> None:
     if not token:
         return
 
+
     try:
-        response = requests.delete(
-            "https://blob.vercel-storage.com",
-            headers={"Authorization": f"Bearer {token}"},
-            json={"urls": [url]},
-        )
-        if response.status_code not in (200, 204):
-            print(f"Vercel Blob delete failed: {response.text}")
+        blob.delete(url_or_path=url, token=token)
+
     except Exception as e:
         print(f"Vercel Blob delete error: {e}")
