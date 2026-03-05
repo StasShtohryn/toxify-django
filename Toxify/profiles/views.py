@@ -34,7 +34,7 @@ class RegisterView(FormView):
     def form_valid(self, form):
         user = form.save()
         login(self.request, user)
-        messages.success(self.request, f"Ласкаво просимо до Toxify, @{user.username}! 🤬")
+        messages.success(self.request, f"Welcome to Toxify, @{user.username}! 🤬")
         return redirect("profile_detail", username=user.username)
 
 
