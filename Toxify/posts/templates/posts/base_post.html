@@ -7,7 +7,7 @@
 <!--        ==================================================== ПОЧАТОК ЛОГІКИ ПОСТА ====================================================-->
     <!--    --------------------------------------------------------- ПРОФІЛЬ АВТОРА ПОСТА ТА ЧАС СТВОРЕННЯ ---------------------------------------------------------        -->
         <div class="flex-1 min-w-0 flex flex-col">
-            <div class="flex justify-between items-start mb-2">
+            <div class="flex justify-between items-start">
 
                 <div class="flex items-center gap-2">
                     {% if post.userProfile %}
@@ -51,12 +51,12 @@
             </div>
         <!--    --------------------------------------------------------- ВМІСТ ПОСТА ---------------------------------------------------------        -->
             {% if post.title %}
-                <h2 class="text-base font-black uppercase tracking-tight mb-1 text-white">
+                <h2 class="text-center border-1 border-white/40 border-dashed bg-white/5 font-black uppercase tracking-tight mb-1 text-white">
                     {{ post.title }}
                 </h2>
             {% endif %}
 
-            <p class="text-sm leading-relaxed mb-4 text-white/90">
+            <p class="text-sm leading-relaxed my-2 text-white/90">
                 {{post.body}}
             </p>
 
@@ -97,47 +97,6 @@
                     </div>
                 {% endif %}
 
-                <!--                 КНОПКИ РЕАКЦІЇ                         -->
-                <div class="flex items-center gap-4 ml-2 pl-4 border-l border-white/10" onclick="event.stopPropagation()">
-
-                    <form action="{% url 'toggle_reaction' post.id 'toxic' %}" method="post">
-                        {% csrf_token %}
-                        <button type="submit" class="flex flex-col items-center group">
-                            <span class="text-[9px] font-black uppercase tracking-tighter transition-all
-                                {% if post.user_current_reaction == 'toxic' %}text-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]{% else %}text-white/20 group-hover:text-green-500/60{% endif %}">
-                                Toxic
-                            </span>
-                        </button>
-                    </form>
-                    <button class="text-[12px] font-mono text-white/40"  onclick="openStatsModal('{{ post.id }}', 'toxic')">
-                        {{ post.toxic_count }}
-                    </button>
-
-
-                    <form action="{% url 'toggle_reaction' post.id 'cringe' %}" method="post">
-                        {% csrf_token %}
-                        <button type="submit" class="flex flex-col items-center group">
-                            <span class="text-[9px] font-black uppercase tracking-tighter transition-all
-                                {% if post.user_current_reaction == 'cringe' %}text-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]{% else %}text-white/20 group-hover:text-purple-500/60{% endif %}">
-                                Cringe
-                            </span>
-                        </button>
-                        </form>
-                    <button class="text-[12px] font-mono text-white/40" onclick="openStatsModal('{{ post.id }}', 'cringe')">{{ post.cringe_count }}</button>
-
-
-                    <form action="{% url 'toggle_reaction' post.id 'based' %}" method="post">
-                        {% csrf_token %}
-                        <button type="submit" class="flex flex-col items-center group">
-                            <span class="text-[9px] font-black uppercase tracking-tighter transition-all
-                                {% if post.user_current_reaction == 'based' %}text-blue-400 shadow-[0_0_10px_rgba(96,165,250,0.5)]{% else %}text-white/20 group-hover:text-blue-400/60{% endif %}">
-                                Based
-                            </span>
-                        </button>
-                    </form>
-                    <button class="text-[12px] font-mono text-white/40" onclick="openStatsModal('{{ post.id }}', 'bases')">{{ post.based_count }}</button>
-                </div>
-
 
                 <!--                 КНОПКА КОМЕНТ                         -->
                 <button class="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer">
@@ -151,6 +110,60 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-repeat2-icon lucide-repeat-2 transition-transform hover:scale-110"><path d="m2 9 3-3 3 3"/><path d="M13 18H7a2 2 0 0 1-2-2V6"/><path d="m22 15-3 3-3-3"/><path d="M11 6h6a2 2 0 0 1 2 2v10"/></svg>
                     <span class="text-xs">5</span>
                 </button>
+
+                
+                <!--                 КНОПКИ РЕАКЦІЇ                         -->
+                <div class="flex items-center gap-4 pl-6 border-l border-white/10" onclick="event.stopPropagation()">
+
+                    <form action="{% url 'toggle_reaction' post.id 'toxic' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="relative flex flex-col items-center group">
+                            <span class="text-[9px] font-black uppercase tracking-tighter transition-all cursor-pointer
+                                {% if post.user_current_reaction == 'toxic' %}text-green-500{% else %}text-white/20 hover:text-green-500/60{% endif %}">
+                                Toxic
+                            </span>
+
+                            <span class="absolute -right-2 -top-1 text-[10px] text-green-500 opacity-0 group-hover:opacity-100 transition">
+                                +
+                            </span>
+                        </button>
+                    </form>
+                    <button class="text-[12px] text-white/40"  onclick="openStatsModal('{{ post.id }}', 'toxic')">
+                        {{ post.toxic_count }}
+                    </button>
+
+
+                    <form action="{% url 'toggle_reaction' post.id 'cringe' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="relative flex flex-col items-center group">
+                            <span class="text-[9px] font-black uppercase tracking-tighter transition-all cursor-pointer
+                                {% if post.user_current_reaction == 'cringe' %}text-purple-500{% else %}text-white/20 hover:text-purple-500/60{% endif %}">
+                                Cringe
+                            </span>
+
+                            <span class="absolute -right-2 -top-1 text-[10px] text-green-500 opacity-0 group-hover:opacity-100 transition">
+                                +
+                            </span>
+                        </button>
+                        </form>
+                    <button class="text-[12px] text-white/40" onclick="openStatsModal('{{ post.id }}', 'cringe')">{{ post.cringe_count }}</button>
+
+
+                    <form action="{% url 'toggle_reaction' post.id 'based' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="relative flex flex-col items-center group">
+                            <span class="text-[9px] font-black uppercase tracking-tighter transition-all cursor-pointer
+                                {% if post.user_current_reaction == 'based' %}text-blue-400{% else %}text-white/20 hover:text-blue-400/60{% endif %}">
+                                Based
+                            </span>
+
+                            <span class="absolute -right-2 -top-1 text-[10px] text-green-500 opacity-0 group-hover:opacity-100 transition">
+                                +
+                            </span>
+                        </button>
+                    </form>
+                    <button class="text-[12px] text-white/40 cursor-pointer" onclick="openStatsModal('{{ post.id }}', 'bases')">{{ post.based_count }}</button>
+                </div>
             </div>
             <!--                 ХЕШТЕГИ                         -->
             {% if post.hashtags.all %}
