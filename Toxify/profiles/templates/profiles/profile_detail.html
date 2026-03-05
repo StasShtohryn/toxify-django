@@ -33,19 +33,20 @@
           {{ profile.followers_count }} FOLLOWERS
         </button>
         <div class="text-xs text-white/40 hover:text-white cursor-pointer transition-colors">
-          Toxic level: {{profile.get_toxicity_level_display}} Reputation: {{profile.reputation_score}}
+          <p>Toxic level: {{profile.get_toxicity_level_display}}</p>
+          <p>Reputation: {{profile.reputation_score}}</p>
         </div>
         <div class="flex gap-2">
           {% if is_owner %}
-            <a href="{% if not user.is_authenticated %}{% url 'login' %}{% else %} {% url 'post_create' username=profile.user.username %} {% endif %}"  class="px-4 py-2 border border-white/20 text-xs font-bold hover:bg-white/5 transition-colors cursor-pointer">
+            <a href="{% if not user.is_authenticated %}{% url 'login' %}{% else %} {% url 'post_create' username=profile.user.username %} {% endif %}"  class="px-3 py-1 border border-white/20 text-xs font-bold hover:bg-white/5 transition-colors cursor-pointer">
               CREATE POST
             </a>
-            <a href="{% url 'profile_edit' %}" class="px-4 py-2 border border-white/20 text-xs font-bold hover:bg-white/5 transition-colors cursor-pointer">
+            <a href="{% url 'profile_edit' %}" class="px-3 py-1 border border-white/20 text-xs font-bold hover:bg-white/5 transition-colors cursor-pointer">
               EDIT PROFILE
             </a>
             <form action="{% url 'logout' %}" method="post" style="display: inline;">
               {% csrf_token %}
-              <button type="submit" class="px-4 py-2 border border-white/20 text-xs font-bold hover:bg-white/5 transition-colors cursor-pointer">
+              <button type="submit" class="px-3 py-1 border border-white/20 text-xs font-bold hover:bg-white/5 transition-colors cursor-pointer">
                 EXIT
               </button>
             </form>
@@ -75,17 +76,17 @@
 
 
     <div class="flex border-b border-white/10">
-      <button onclick="switchTab('posts')" id="tab-posts" class="flex-1 py-4 text-xs font-bold relative group">
+      <button onclick="switchTab('posts')" id="tab-posts" class="flex-1 py-4 text-xs cursor-pointer font-bold relative group">
         <span class="tab-label opacity-100 transition-opacity">POSTS</span>
         <div class="tab-indicator absolute bottom-0 left-0 right-0 h-0.5 bg-white"></div>
       </button>
 
-      <button onclick="switchTab('replies')" id="tab-replies" class="flex-1 py-4 text-xs font-bold relative group">
+      <button onclick="switchTab('replies')" id="tab-replies" class="flex-1 py-4 text-xs cursor-pointer font-bold relative group">
         <span class="tab-label opacity-40 group-hover:opacity-100 transition-opacity">REPLIES</span>
         <div class="tab-indicator absolute bottom-0 left-0 right-0 h-0.5 bg-white hidden"></div>
       </button>
 
-      <button onclick="switchTab('reposts')" id="tab-reposts" class="flex-1 py-4 text-xs font-bold relative group">
+      <button onclick="switchTab('reposts')" id="tab-reposts" class="flex-1 py-4 text-xs cursor-pointer font-bold relative group">
         <span class="tab-label opacity-40 group-hover:opacity-100 transition-opacity">REPOSTS</span>
         <div class="tab-indicator absolute bottom-0 left-0 right-0 h-0.5 bg-white hidden"></div>
       </button>
