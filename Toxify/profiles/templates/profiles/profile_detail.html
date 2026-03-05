@@ -108,7 +108,13 @@
         </div>
 
         <div id="reposts-section" class="divide-y divide-white/10 hidden">
-            <h2 class="text-center text-xs uppercase tracking-widest text-white/20 py-10">no reposts yet</h2>
+            {% if not reposted_posts %}
+                <h2 class="text-center text-xs uppercase tracking-widest text-white/20 py-10">no reposts yet</h2>
+            {% else %}
+                {% for post in reposted_posts %}
+                    {% include 'posts/base_post.html' with post=post %}
+                {% endfor %}
+            {% endif %}
         </div>
     </div>
 </div>

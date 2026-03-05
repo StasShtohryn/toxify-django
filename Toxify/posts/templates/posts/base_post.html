@@ -104,10 +104,28 @@
                     </a>
                 </button>
                 <!--                 КНОПКА РЕПОСТ                         -->
-                <button class="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-repeat2-icon lucide-repeat-2 transition-transform hover:scale-110"><path d="m2 9 3-3 3 3"/><path d="M13 18H7a2 2 0 0 1-2-2V6"/><path d="m22 15-3 3-3-3"/><path d="M11 6h6a2 2 0 0 1 2 2v10"/></svg>
-                    <span class="text-xs">5</span>
-                </button>
+                {% if user.is_authenticated and post.userProfile != user.profile %}
+                <div class="flex items-center gap-1.5" onclick="event.stopPropagation()">
+                    <form class="repost-form inline" action="{% url 'repost_toggle' post.id %}" method="post" data-post-id="{{ post.id }}">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <button type="submit" class="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer {% if post.user_has_reposted %}text-green-400{% else %}text-white/40{% endif %}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="{% if post.user_has_reposted %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-repeat-2 transition-transform hover:scale-110"><path d="m2 9 3-3 3 3"/><path d="M13 18H7a2 2 0 0 1-2-2V6"/><path d="m22 15-3 3-3-3"/><path d="M11 6h6a2 2 0 0 1 2 2v10"/></svg>
+                        </button>
+                    </form>
+                    <span class="repost-count text-xs {% if post.user_has_reposted %}text-green-400{% else %}text-white/40{% endif %}">{{ post.reposted_by.count }}</span>
+                </div>
+                {% elif user.is_authenticated %}
+                <div class="flex items-center gap-1.5 text-white/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="lucide lucide-repeat-2"><path d="m2 9 3-3 3 3"/><path d="M13 18H7a2 2 0 0 1-2-2V6"/><path d="m22 15-3 3-3-3"/><path d="M11 6h6a2 2 0 0 1 2 2v10"/></svg>
+                    <span class="text-xs">{{ post.reposted_by.count }}</span>
+                </div>
+                {% else %}
+                <a href="{% url 'login' %}?next={{ request.get_full_path }}" class="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer text-white/40">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="lucide lucide-repeat-2"><path d="m2 9 3-3 3 3"/><path d="M13 18H7a2 2 0 0 1-2-2V6"/><path d="m22 15-3 3-3-3"/><path d="M11 6h6a2 2 0 0 1 2 2v10"/></svg>
+                    <span class="text-xs">{{ post.reposted_by.count }}</span>
+                </a>
+                {% endif %}
 
                 
                 <!--                 КНОПКИ РЕАКЦІЇ                         -->
