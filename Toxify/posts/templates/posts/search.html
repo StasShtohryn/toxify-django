@@ -53,34 +53,7 @@
         {% if posts %}
             <div class="mt-6 mb-2 text-xs font-bold text-white/40 uppercase tracking-wider">Пости</div>
             {% for post in posts %}
-                <div class="border-b border-white/10 p-4 hover:bg-white/[0.02] transition-colors flex gap-3">
-                    <a href="{% url 'profile_detail' post.userProfile.user.username %}" class="shrink-0">
-                        <img
-                            src="{% if post.userProfile.avatar %}{{ post.userProfile.avatar }}{% endif %}"
-                            alt=""
-                            class="w-10 h-10 border border-white/20 object-cover bg-white/5"
-                        />
-                    </a>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2 mb-1">
-                            <a href="{% url 'profile_detail' post.userProfile.user.username %}" class="font-bold text-sm hover:underline">{{ post.userProfile.user.username }}</a>
-                            <span class="text-white/40 text-xs">{{ post.created_at|timesince }} тому</span>
-                        </div>
-                        {% if post.title %}
-                            <div class="text-sm font-medium mb-1">{{ post.title }}</div>
-                        {% endif %}
-                        {% if post.body %}
-                            <p class="text-sm text-white/80 line-clamp-3 linkify-mentions">{{ post.body }}</p>
-                        {% endif %}
-                        {% if post.hashtags.all %}
-                            <div class="flex flex-wrap gap-2 mt-2">
-                                {% for tag in post.hashtags.all %}
-                                    <a href="{% url 'search' %}?q=%23{{ tag.name }}" class="text-xs text-white/50 hover:text-white/80 transition">#{{ tag.name }}</a>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
+                {% include 'posts/base_post.html' with post=post %}
             {% endfor %}
         {% endif %}
 

@@ -118,7 +118,9 @@ class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, View):
             form = ProfileEditForm(
                 request.POST, request.FILES, instance=request.user.profile
             )
+            print("save_profile 1")
             if form.is_valid():
+                print("save_profile 2")
                 profile = form.save(commit=False)
                 avatar_file = request.FILES.get('avatar')
                 if avatar_file:
