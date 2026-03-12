@@ -3,10 +3,12 @@
 {% block title %} Toxify {% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto space-y-4">
-    {% for post in posts %}
-        {% include 'posts/base_post.html' with post=post %}
-    {% endfor %}
 
-</div>
+    <div class="max-w-2xl mx-auto space-y-4">
+        {% for post in posts %}
+            {% include 'posts/base_post.html' with post=post %}
+        {% endfor %}
+
+    </div>
+
 {% endblock %}
