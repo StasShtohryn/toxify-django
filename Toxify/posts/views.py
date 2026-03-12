@@ -1,5 +1,6 @@
 import re
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.http import JsonResponse
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
@@ -448,7 +449,6 @@ def notifications_list(request):
 
 
 class LikePostToggleView(LoginRequiredMixin, View):
-    """POST: поставити або зняти лайк з поста."""
     login_url = '/profile/login/'
 
     def post(self, request, post_id):
@@ -459,7 +459,6 @@ class LikePostToggleView(LoginRequiredMixin, View):
         if not created:
             like.delete()
             liked = False
-
         else:
             liked = True
             if post.userProfile != profile:
@@ -470,13 +469,20 @@ class LikePostToggleView(LoginRequiredMixin, View):
                     message=f"liked your toxic post: '{post.title[:20]}...'"
                 )
 
+        # Якщо запит асинхронний — повертаємо JSON
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'liked': liked,
+                'count': post.post_likes.count()
+            })
+
+        # Якщо синхронний — звичайний redirect
         redirect_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or reverse('posts')
         return redirect(redirect_url)
 
 
 
 class LikeCommentToggleView(LoginRequiredMixin, View):
-    """POST: поставити або зняти лайк з коментаря."""
     login_url = '/profile/login/'
 
     def post(self, request, comment_id):
@@ -487,11 +493,9 @@ class LikeCommentToggleView(LoginRequiredMixin, View):
         if not created:
             like.delete()
             liked = False
-
         else:
             liked = True
             author_profile = comment.commentProfile
-
             if author_profile != profile:
                 Notification.objects.create(
                     recipient=author_profile.user,
@@ -500,8 +504,10 @@ class LikeCommentToggleView(LoginRequiredMixin, View):
                     message=f"liked your toxic comment: '{comment.body[:20]}...'"
                 )
 
-        redirect_url = request.POST.get('next') or request.META.get('HTTP_REFERER')
-        return redirect(redirect_url)
+        return JsonResponse({
+            'liked': liked,
+            'count': comment.comment_likes.count()
+        })
 
 
 @login_required
