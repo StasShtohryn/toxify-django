@@ -1,10 +1,10 @@
 from django.contrib.auth.views import LogoutView, LoginView
 from django.urls import path
 from .views import RegisterView, ProfileDetailView, ProfileEditView, FollowToggleView, RepostToggleView, user_search_api
-from .forms import RegisterForm, LoginForm  # або додати LoginForm до існуючого імпорту
+from .forms import RegisterForm, LoginForm
 
 urlpatterns = [
-    # Реєстрація
+
     path("register/", RegisterView.as_view(), name="register"),
     path('login/', LoginView.as_view(
         template_name='profiles/login.html',

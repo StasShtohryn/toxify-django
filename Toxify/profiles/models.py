@@ -3,88 +3,88 @@ from django.contrib.auth.models import AbstractUser
 from django.db.models import Count
 from utils.blobs import url
 
+
 class User(AbstractUser):
     pass
 
 
 class Profile(models.Model):
     """
-    Профіль користувача. Зв'язок 1-до-1 з User.
-    Містить: аватар, біо, токсик-рівень, підписки, статистику постів.
+    User profile. One-to-one relation with User.
+    Contains: avatar, bio, toxicity level, subscriptions, post statistics.
     """
 
-    # ── Базові поля ──────────────────────────────────────────────────────────
+    # ── Basic fields ─────────────────────────────────────────────────────────
     name = models.CharField(max_length=50)
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
         related_name="profile",
     )
-    # reposted_posts = models.ManyToManyField(
-    #     "posts.Post",
-    #     blank=True,
-    #     through="Repost",
-    #     # related_name прибираємо — він вже є в Repost.post
-    # )
+
     avatar = models.URLField(
         blank=True,
         default=f'{url}avatars/default.jpg',
         null=True,
-        help_text="Фото профілю",
+        help_text="Profile picture",
     )
+
     bio = models.TextField(
         max_length=300,
         blank=True,
         default="",
-        help_text="Розкажи про себе (або не розказуй — це Toxify)",
+        help_text="Tell something about yourself (or don't — this is Toxify)",
     )
+
     tag = models.CharField(
         max_length=30,
         blank=True,
         default='',
     )
 
-    # Закритий профіль: контент бачать тільки підписники
+    # Private profile: content visible only to followers
     is_closed = models.BooleanField(
         default=False,
-        help_text="Якщо True — пости/репости/відповіді видно тільки підписникам",
+        help_text="If True — posts/reposts/replies are visible only to followers",
     )
 
-    # ── Підписки ─────────────────────────────────────────────────────────────
+    # ── Subscriptions ────────────────────────────────────────────────────────
     following = models.ManyToManyField(
         "self",
         symmetrical=False,
         blank=True,
         related_name="followers",
-        help_text="На кого підписаний цей юзер",
+        help_text="Users that this profile follows",
     )
 
-    # ── Токсик-система ───────────────────────────────────────────────────────
+    # ── Toxicity system ──────────────────────────────────────────────────────
     TOXICITY_CHOICES = [
         (0, "😇 Innocent"),
         (1, "😐 Edgy"),
         (2, "😤 Salty"),
         (3, "🤬 Toxic"),
-        (4, "☢️  Radioactive"),
+        (4, "☢️ Radioactive"),
         (5, "💀 Banned-worthy"),
     ]
+
     toxicity_level = models.PositiveSmallIntegerField(
         choices=TOXICITY_CHOICES,
         default=0,
-        help_text="Автоматично оновлюється на основі репортів",
-    )
-    reputation_score = models.IntegerField(
-        default=0,
-        help_text="Позитивне = лайки, негативне = репорти. Може йти в мінус.",
+        help_text="Automatically updated based on reports",
     )
 
-    # ── Мета ─────────────────────────────────────────────────────────────────
+    reputation_score = models.IntegerField(
+        default=0,
+        help_text="Positive = likes, negative = reports. Can go below zero.",
+    )
+
+    # ── Metadata ─────────────────────────────────────────────────────────────
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Профіль"
-        verbose_name_plural = "Профілі"
+        verbose_name = "Profile"
+        verbose_name_plural = "Profiles"
 
     def __str__(self):
         return f"@{self.user.username} [{self.get_toxicity_level_display()}]"
@@ -101,7 +101,7 @@ class Profile(models.Model):
 
     @property
     def posts_count(self) -> int:
-        # Припускається, що Post має ForeignKey(User, related_name='posts')
+        # Assumes Post has ForeignKey(User, related_name='posts')
         return self.user.posts.count()
 
     @property
@@ -111,15 +111,16 @@ class Profile(models.Model):
     # ── Helpers ──────────────────────────────────────────────────────────────
 
     def is_following(self, other_profile: "Profile") -> bool:
-        """Чи підписаний поточний профіль на other_profile."""
+        """Checks if the current profile follows another profile."""
         return self.following.filter(pk=other_profile.pk).exists()
 
     def recalculate_toxicity(self) -> None:
         """
-        Перераховує токсик-рівень на основі reputation_score.
-        Викликати після кожного репорту / лайку.
+        Recalculates toxicity level based on reputation_score.
+        Should be called after each report or like.
         """
         score = self.reputation_score
+
         if score >= 50:
             level = 0
         elif score >= 10:
@@ -132,9 +133,9 @@ class Profile(models.Model):
             level = 4
         else:
             level = 5
+
         self.toxicity_level = level
         self.save(update_fields=["toxicity_level"])
-
 
 
 class Repost(models.Model):
@@ -143,11 +144,13 @@ class Repost(models.Model):
         on_delete=models.CASCADE,
         related_name="reposts",
     )
+
     post = models.ForeignKey(
         "posts.Post",
         on_delete=models.CASCADE,
         related_name="reposted_by",
     )
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

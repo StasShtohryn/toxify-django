@@ -6,4 +6,4 @@ class ProfileConfig(AppConfig):
     name = "profiles"
 
     def ready(self):
-        import profiles.signals  # noqa — підключає сигнали при старті Django
+        import profiles.signals
