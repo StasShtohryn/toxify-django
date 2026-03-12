@@ -1,6 +1,5 @@
-import re
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
@@ -10,6 +9,7 @@ from django.views import View
 from django.db.models import Q
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 
 from utils.blobs import upload_to_vercel_blob
 from . import forms
@@ -18,6 +18,7 @@ from .models import Post, Hashtag, Comment, PostLike, Report, Reaction, CommentR
 from .models import Post, Hashtag, Comment, Notification
 from profiles.models import Profile, User, Repost
 
+import re
 
 # Create your views here.
 
@@ -188,11 +189,6 @@ class PostDetailView(DetailView):
         return context
 
 
-import re
-from django.contrib.auth.models import User
-from .models import Notification  # Твоя модель сповіщень
-
-
 def handle_mentions(text, sender, post=None):
     User = get_user_model()
     usernames = re.findall(r'@(\w+)', text)
@@ -231,11 +227,13 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.userProfile = self.userProfile
         image_file = self.request.FILES.get('images')
+        self.object = form.save(commit=False)
+
         if image_file:
             from utils.blobs import upload_to_vercel_blob
             form.instance.images = upload_to_vercel_blob(image_file, folder="posts")
 
-        response = super().form_valid(form)
+        self.object.save()
 
         hashtags_str = self.request.POST.get('hashtags_input', '')
         if hashtags_str:
@@ -243,6 +241,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
             for tag_name in tag_list:
                 tag, created = Hashtag.objects.get_or_create(name=tag_name)
                 self.object.hashtags.add(tag)
+
         if self.object.body:
             handle_mentions(
                 text=self.object.body,
@@ -252,7 +251,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 
         messages.success(self.request, "Post created successfully!")
 
-        return response
+        return HttpResponseRedirect(self.get_success_url())
 
 
     def get_success_url(self):
@@ -456,14 +455,8 @@ def report_comment(request, comment_id):
 
 @login_required
 def notifications_list(request):
-    # 1. Отримуємо сповіщення
     notifications = Notification.objects.filter(recipient=request.user).order_by('-created_at')
-
-    # Створюємо список непрочитаних ID, щоб передати їх у шаблон окремо,
-    # або просто завантажуємо QuerySet у пам'ять через list()
     notifications_list = list(notifications)
-
-    # 2. Оновлюємо статус у базі (це не вплине на вже завантажений notifications_list)
     Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
 
     return render(request, 'posts/notifications.html', {'notifications': notifications_list})
@@ -655,19 +648,26 @@ def edit_post(request, post_id):
         if form.is_valid():
             updated_post = form.save(commit=False)
 
-            if 'images' in request.FILES:
-                updated_post.image = request.FILES['images']
+            if request.POST.get('delete_image') == 'true':
+                updated_post.images = ""
+
+            image_file = request.FILES.get('images')
+            if image_file:
+                new_url = upload_to_vercel_blob(image_file, folder="posts")
+                updated_post.images = new_url
 
             updated_post.save()
 
+            updated_post.hashtags.clear()
             hashtags_input = request.POST.get('hashtags_input', '')
             if hashtags_input:
-                updated_post.hashtags.clear()
                 for tag_name in hashtags_input.split(','):
                     tag_name = tag_name.strip().lower()
                     if tag_name:
                         tag, created = Hashtag.objects.get_or_create(name=tag_name)
                         updated_post.hashtags.add(tag)
+
+            form.save_m2m()
 
             return redirect('post_detail', post_id=updated_post.id)
     else:
@@ -679,6 +679,7 @@ def edit_post(request, post_id):
         'post': post,
         'current_tags': current_tags
     })
+
 
 
 @login_required
