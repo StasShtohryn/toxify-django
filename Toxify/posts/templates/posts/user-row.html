@@ -1,17 +1,18 @@
 {% if profile and profile.user %}
-<a href="{% url 'profile_detail' profile.user.username %}" class="flex items-center gap-3 p-2 hover:bg-white/5 transition-colors rounded">
-    <div class="w-8 h-8 border border-white/10 bg-white/5 shrink-0 overflow-hidden rounded-full">
-        {% if profile.avatar %}
-            <img src="{{ profile.avatar }}" alt="" class="w-full h-full object-cover" referrerpolicy="no-referrer"/>
-        {% else %}
-            <div class="w-full h-full bg-gradient-to-br from-red-900/20 to-black flex items-center justify-center text-[10px] text-white/40">
-                {{ profile.user.username|slice:":1"|upper }}
-            </div>
-        {% endif %}
-    </div>
-    <div>
-        <div class="font-bold text-[11px] leading-tight">{% firstof profile.name profile.user.username %}</div>
-        <div class="text-[9px] text-white/30 uppercase tracking-tighter">@{{ profile.user.username }}</div>
-    </div>
-</a>
+    <a href="{% url 'profile_detail' profile.user.username %}" class="flex items-center gap-3 p-2 hover:bg-white/5 transition-colors rounded">
+        <div class="w-8 h-8 border border-white/10 bg-white/5 shrink-0 overflow-hidden rounded-full">
+            {% if profile.avatar %}
+                <img src="{{ profile.avatar }}" alt="" class="w-full h-full object-cover" referrerpolicy="no-referrer"/>
+            {% else %}
+                <div class="w-full h-full bg-gradient-to-br from-red-900/20 to-black flex items-center justify-center text-[10px] text-white/40">
+                    {{ profile.user.username|slice:":1"|upper }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div>
+            <div class="font-bold text-[11px] leading-tight">{% firstof profile.name profile.user.username %}</div>
+            <div class="text-[9px] text-white/30 uppercase tracking-tighter">@{{ profile.user.username }}</div>
+        </div>
+    </a>
 {% endif %}

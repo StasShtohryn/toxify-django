@@ -7,48 +7,48 @@
 {% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto ml-4 mt-4">
-   <a href="{{ back_url }}" id="back-button" class="inline-flex items-center gap-2 text-white/40 hover:text-white transition-colors group">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>
-        </svg>
-        <span class="text-xs font-bold uppercase tracking-wider">Go back</span>
-    </a>
-</div>
-<div class="max-w-2xl mx-auto space-y-4">
-    {% include 'posts/base_post.html' with post=post %}
-</div>
+    <div class="max-w-2xl mx-auto ml-4 mt-4">
+       <a href="{{ back_url }}" id="back-button" class="inline-flex items-center gap-2 text-white/40 hover:text-white transition-colors group">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>
+            </svg>
+            <span class="text-xs font-bold uppercase tracking-wider">Go back</span>
+        </a>
+    </div>
+
+    <div class="max-w-2xl mx-auto space-y-4">
+        {% include 'posts/base_post.html' with post=post %}
+    </div>
 {% endblock %}
 
-
+<!--        ==================================================== ДЖАВАСКРИПТ КНОПКИ GO BACK ====================================================-->
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const backBtn = document.getElementById('back-button');
-    if (backBtn) {
-        backBtn.addEventListener('click', function(e) {
-            const lastTab = sessionStorage.getItem('last_profile_tab');
-            // Якщо ми повертаємось на профіль
-            if (lastTab && this.href.includes('/profile/users/')) {
-                e.preventDefault();
-                // Додаємо хеш до посилання і переходимо
-                const targetUrl = this.href.split('#')[0] + '#' + lastTab;
-                window.location.href = targetUrl;
-            }
-        });
-    }
-});
-
-
-window.addEventListener('load', () => {
-    if (window.location.hash) {
-        const commentId = window.location.hash;
-        const element = document.querySelector(commentId);
-        if (element) {
-            // Невелике запізнення, щоб сторінка встигла прогрузитися
-            setTimeout(() => {
-                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 500);
+    document.addEventListener('DOMContentLoaded', () => {
+        const backBtn = document.getElementById('back-button');
+        if (backBtn) {
+            backBtn.addEventListener('click', function(e) {
+                const lastTab = sessionStorage.getItem('last_profile_tab');
+                // Якщо ми повертаємось на профіль
+                if (lastTab && this.href.includes('/profile/users/')) {
+                    e.preventDefault();
+                    // Додаємо хеш до посилання і переходимо
+                    const targetUrl = this.href.split('#')[0] + '#' + lastTab;
+                    window.location.href = targetUrl;
+                }
+            });
         }
-    }
-});
+    });
+
+    window.addEventListener('load', () => {
+        if (window.location.hash) {
+            const commentId = window.location.hash;
+            const element = document.querySelector(commentId);
+            if (element) {
+                // Невелике запізнення, щоб сторінка встигла прогрузитися
+                setTimeout(() => {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 500);
+            }
+        }
+    });
 </script>

@@ -1,6 +1,7 @@
 <div class="max-w-2xl mx-auto space-y-4">
     <div class="border-b border-white/10 p-4 hover:bg-white/[0.02] transition-colors flex gap-3 cursor-pointer post-card"
          data-url="{% url 'post_detail' post.id %}">
+
         <div class="flex flex-col items-center gap-2">
             <img src="{{post.userProfile.avatar}}" alt="profile pic" class="w-10 h-10 border border-white/20 object-cover">
         </div>
@@ -26,28 +27,35 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
                     </button>
 
+
                     <div id="dropdown-{{ post.id }}"
                          class="hidden absolute right-0 top-full mt-2 w-40 bg-[#0a0a0a] border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.5)] z-[110] post-dropdown">
                         <div class="flex flex-col py-1">
+
+                            <!--                 КНОПКА ВІДКРИТИ ПОСТ                         -->
                             <a href="{% url 'post_detail' post.id %}" class="flex items-center gap-3 px-3 py-2 text-[10px] text-white/50 hover:bg-white/5 hover:text-white transition-colors uppercase font-bold">
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10l-5 5-5-5"/></svg>
                                 Open post
                             </a>
+
+                            <!--                 КНОПКА ПОДІЛИТИСЬ                         -->
                             <button onclick="sharePost('{{ post.title|escapejs }}', '{% url 'post_detail' post.id %}')"
                                     class="flex items-center gap-3 px-3 py-2 text-[10px] text-white/50 hover:bg-white/5 hover:text-white transition-colors uppercase font-bold text-left">
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-                                Share
+                                Share Post
                             </button>
+
+                            <!--                 КНОПКА СКАРГИ                         -->
                             {% if post.userProfile.user != user %}
                                 <button onclick="openReportModal('{{ post.id }}', '{{ post.title|escapejs }}')"
                                    class="flex items-center gap-3 px-3 py-2 text-[10px] text-red-500/50 hover:bg-red-500/5 hover:text-red-500 transition-colors uppercase font-bold text-left">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/></svg>
-                                    Report
+                                    Report Post
                                 </button>
                             {% endif %}
 
+                            <!--                 КНОПКА РЕДАГУВАТИ ПОСТ                         -->
                             {% if post.userProfile.user == request.user %}
-                                <div class="h-px bg-white/5 my-1"></div>
                                 <a href="{% url 'edit_post' post.id %}"
                                    class="flex items-center gap-3 px-3 py-2 text-[10px] text-white/50 hover:bg-white/5 hover:text-white transition-colors uppercase font-bold">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -55,17 +63,20 @@
                                     </svg>
                                     Edit Post
                                 </a>
+
+                                <!--                 КНОПКА ВИДАЛИТИ ПОСТ                         -->
                                <button onclick="openDeleteModal('{% url 'post_delete' post.id %}', 'THIS POST')"
                                     class="flex items-center gap-3 px-3 py-2 text-[10px] text-red-500 hover:bg-red-500/10 transition-colors uppercase font-bold text-left">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/></svg>
                                     Delete Post
-                                </button>
+                               </button>
                             {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
-        <!--    --------------------------------------------------------- ВМІСТ ПОСТА ---------------------------------------------------------        -->
+
+            <!--    --------------------------------------------------------- ВМІСТ ПОСТА ---------------------------------------------------------        -->
             {% if post.title %}
                 <h2 class="text-center border-1 border-white/40 border-dashed bg-white/5 font-black uppercase tracking-tight mb-1 text-white">
                     {{ post.title }}
@@ -80,7 +91,7 @@
                 </div>
             {% endif %}
 
-<!--    --------------------------------------------------------- КНОПКИ ДЛЯ ПОСТА ---------------------------------------------------------        -->
+            <!--    --------------------------------------------------------- КНОПКИ ДЛЯ ПОСТА ---------------------------------------------------------        -->
             <div class="flex gap-6 text-white/40">
                 <!--                 КНОПКА ЛАЙК                         -->
                 {% if user.is_authenticated %}
@@ -105,7 +116,9 @@
                             <span class="text-xs" id="like-count-{{ post.id }}">{{ post.post_likes.count }}</span>
                         </button>
                     </div>
+
                 {% else %}
+
                     <div class="flex items-center gap-1.5">
                         <a href="{% url 'login' %}?next={{ request.get_full_path }}" class="flex items-center hover:text-white transition-colors cursor-pointer text-white/40">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart transition-transform hover:scale-110"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></svg>
@@ -124,6 +137,8 @@
                         <span class="text-xs">{{ post.post_comments.count }}</span>
                     </a>
                 </button>
+
+
                 <!--                 КНОПКА РЕПОСТ                         -->
                 {% if user.is_authenticated and post.userProfile != user.profile %}
                 <div class="flex items-center gap-1.5" onclick="event.stopPropagation()">
@@ -136,16 +151,18 @@
                     </form>
                     <span class="repost-count text-xs {% if post.user_has_reposted %}text-green-400{% else %}text-white/40{% endif %}">{{ post.reposted_by.count }}</span>
                 </div>
+
                 {% elif user.is_authenticated %}
-                <div class="flex items-center gap-1.5 text-white/20">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="lucide lucide-repeat-2"><path d="m2 9 3-3 3 3"/><path d="M13 18H7a2 2 0 0 1-2-2V6"/><path d="m22 15-3 3-3-3"/><path d="M11 6h6a2 2 0 0 1 2 2v10"/></svg>
-                    <span class="text-xs">{{ post.reposted_by.count }}</span>
-                </div>
+                    <div class="flex items-center gap-1.5 text-white/20">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="lucide lucide-repeat-2"><path d="m2 9 3-3 3 3"/><path d="M13 18H7a2 2 0 0 1-2-2V6"/><path d="m22 15-3 3-3-3"/><path d="M11 6h6a2 2 0 0 1 2 2v10"/></svg>
+                        <span class="text-xs">{{ post.reposted_by.count }}</span>
+                    </div>
+
                 {% else %}
-                <a href="{% url 'login' %}?next={{ request.get_full_path }}" class="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer text-white/40">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="lucide lucide-repeat-2"><path d="m2 9 3-3 3 3"/><path d="M13 18H7a2 2 0 0 1-2-2V6"/><path d="m22 15-3 3-3-3"/><path d="M11 6h6a2 2 0 0 1 2 2v10"/></svg>
-                    <span class="text-xs">{{ post.reposted_by.count }}</span>
-                </a>
+                    <a href="{% url 'login' %}?next={{ request.get_full_path }}" class="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer text-white/40">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="lucide lucide-repeat-2"><path d="m2 9 3-3 3 3"/><path d="M13 18H7a2 2 0 0 1-2-2V6"/><path d="m22 15-3 3-3-3"/><path d="M11 6h6a2 2 0 0 1 2 2v10"/></svg>
+                        <span class="text-xs">{{ post.reposted_by.count }}</span>
+                    </a>
                 {% endif %}
 
                 
@@ -165,10 +182,10 @@
                             </span>
                         </button>
                     </form>
+
                     <button class="text-[12px] text-white/40"  onclick="openStatsModal('{{ post.id }}', 'toxic')">
                         {{ post.toxic_count }}
                     </button>
-
 
                     <form action="{% url 'toggle_reaction' post.id 'cringe' %}" method="post">
                         {% csrf_token %}
@@ -182,7 +199,7 @@
                                 +
                             </span>
                         </button>
-                        </form>
+                    </form>
                     <button class="text-[12px] text-white/40" onclick="openStatsModal('{{ post.id }}', 'cringe')">{{ post.cringe_count }}</button>
 
 
@@ -200,51 +217,57 @@
                         </button>
                     </form>
                     <button class="text-[12px] text-white/40 cursor-pointer" onclick="openStatsModal('{{ post.id }}', 'bases')">{{ post.based_count }}</button>
+
                 </div>
             </div>
+
+
             <!--                 ХЕШТЕГИ                         -->
             {% if post.hashtags.all %}
-            <div class="flex flex-wrap gap-2 mt-2">
-                {% for tag in post.hashtags.all %}
-                    {% if is_detail or forloop.counter <= 3 %}
-                        <a href="{% url 'search' %}?q=%23{{ tag.name }}"
-                           class="text-[10px] font-bold text-white/40 bg-white/5 px-2 py-0.5 border border-white/10 hover:border-white/60 hover:text-white transition-colors cursor-pointer">
-                            #{{ tag.name }}
-                        </a>
-                    {% endif %}
-
-                    {% if not is_detail and forloop.counter == 3 and post.hashtags.count > 3 %}
-                        <span class="text-[10px] text-white/20 self-center">
-                            +{{ post.hashtags.count|add:"-3" }}
-                        </span>
-                    {% endif %}
-                {% endfor %}
-            </div>
-        {% endif %}
-<!--    --------------------------------------------------------- КОМЕНТАРІ ДО ПОСТА ---------------------------------------------------------        -->
-            <div class="mt-2 space-y-4 border-l border-white/10 pl-4">
-            {% if is_detail %}
-                {% for comment in comments|dictsortreversed:"created_at" %}
-                    {% if not comment.parent %}
-                        {% include 'posts/comment_thread.html' with comment=comment %}
-                    {% endif %}
-                    {% empty %}
-                <p class="text-[10px] text-white/20 italic"> No toxic comments yet... </p>
-                {% endfor %}
-            {% else %}
-                {% with last_comment=post.cached_last_comment|default:post.get_last_main_comment %}
-                    {% if last_comment %}
-                        {% include 'posts/comment_thread.html' with comment=last_comment %}
-                        {% if post.post_comments.count > 1 %}
-                            <a href="{% url 'post_detail' post.id %}" class="text-[10px] text-white/30 hover:text-white transition-colors ml-11 mt-2 block">
-                                View all {{ post.post_comments.count }} comments...
+                <div class="flex flex-wrap gap-2 mt-2">
+                    {% for tag in post.hashtags.all %}
+                        {% if is_detail or forloop.counter <= 3 %}
+                            <a href="{% url 'search' %}?q=%23{{ tag.name }}"
+                               class="text-[10px] font-bold text-white/40 bg-white/5 px-2 py-0.5 border border-white/10 hover:border-white/60 hover:text-white transition-colors cursor-pointer">
+                                #{{ tag.name }}
                             </a>
                         {% endif %}
-                    {% else %}
-                        <p class="text-[10px] text-white/20 italic"> No toxic comments yet...</p>
-                    {% endif %}
-                {% endwith %}
+
+                        {% if not is_detail and forloop.counter == 3 and post.hashtags.count > 3 %}
+                            <span class="text-[10px] text-white/20 self-center">
+                                +{{ post.hashtags.count|add:"-3" }}
+                            </span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
             {% endif %}
+
+
+        <!--    --------------------------------------------------------- КОМЕНТАРІ ДО ПОСТА ---------------------------------------------------------        -->
+            <div class="mt-2 space-y-4 border-l border-white/10 pl-4">
+                {% if is_detail %}
+                    {% for comment in comments|dictsortreversed:"created_at" %}
+                        {% if not comment.parent %}
+                            {% include 'posts/comment_thread.html' with comment=comment %}
+                        {% endif %}
+                        {% empty %}
+                    <p class="text-[10px] text-white/20 italic"> No toxic comments yet... </p>
+                    {% endfor %}
+
+                {% else %}
+                    {% with last_comment=post.cached_last_comment|default:post.get_last_main_comment %}
+                        {% if last_comment %}
+                            {% include 'posts/comment_thread.html' with comment=last_comment %}
+                            {% if post.post_comments.count > 1 %}
+                                <a href="{% url 'post_detail' post.id %}" class="text-[10px] text-white/30 hover:text-white transition-colors ml-11 mt-2 block">
+                                    View all {{ post.post_comments.count }} comments...
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            <p class="text-[10px] text-white/20 italic"> No toxic comments yet...</p>
+                        {% endif %}
+                    {% endwith %}
+                {% endif %}
             </div>
         </div>
     </div>
@@ -269,12 +292,15 @@
             <button onclick="switchTab('{{ post.id }}', 'likes')" class="flex-1 pb-2 text-[10px] font-bold uppercase tracking-tighter border-b-2 border-transparent transition-all cursor-pointer" id="tab-likes-{{ post.id }}">
                 Likes ({{ post.post_likes.count }})
             </button>
+
             <button onclick="switchTab('{{ post.id }}', 'toxic')" class="flex-1 pb-2 text-[10px] font-bold uppercase tracking-tighter border-b-2 border-transparent transition-all cursor-pointer" id="tab-toxic-{{ post.id }}">
                 Toxic ({{ post.toxic_count }})
             </button>
+
             <button onclick="switchTab('{{ post.id }}', 'cringe')" class="flex-1 pb-2 text-[10px] font-bold uppercase tracking-tighter border-b-2 border-transparent transition-all cursor-pointer" id="tab-cringe-{{ post.id }}">
                 Cringe ({{ post.cringe_count }})
             </button>
+
             <button onclick="switchTab('{{ post.id }}', 'based')" class="flex-1 pb-2 text-[10px] font-bold uppercase tracking-tighter border-b-2 border-transparent transition-all cursor-pointer" id="tab-based-{{ post.id }}">
                 Based ({{ post.based_count }})
             </button>
@@ -326,15 +352,15 @@
     }
 
     function switchTab(postId, tabName) {
-        // 1. Сховати всі списки
         const lists = ['likes', 'toxic', 'cringe', 'based'];
+        // Всі вкладки
         lists.forEach(name => {
             document.getElementById(`list-${name}-${postId}`).classList.add('hidden');
             document.getElementById(`tab-${name}-${postId}`).classList.remove('border-red-500', 'text-white');
             document.getElementById(`tab-${name}-${postId}`).classList.add('text-white/20');
         });
 
-        // 2. Показати потрібний
+        // Показати вміст потрібної
         document.getElementById(`list-${tabName}-${postId}`).classList.remove('hidden');
         document.getElementById(`tab-${tabName}-${postId}`).classList.add('border-red-500', 'text-white');
         document.getElementById(`tab-${tabName}-${postId}`).classList.remove('text-white/20');
@@ -354,8 +380,6 @@
         lists.forEach(name => {
             const tab = document.getElementById(`tab-${name}-${postId}`);
             const list = document.getElementById(`list-${name}-${postId}`);
-
-            // Скидаємо всі стилі
             list.classList.add('hidden');
             tab.className = "flex-1 pb-2 text-[10px] font-bold uppercase tracking-tighter border-b-2 border-transparent transition-all text-white/20";
         });
@@ -365,7 +389,6 @@
         const activeList = document.getElementById(`list-${tabName}-${postId}`);
 
         activeList.classList.remove('hidden');
-        // Додаємо специфічний колір з об'єкта themeColors
         activeTab.className = `flex-1 pb-2 text-[10px] font-bold uppercase tracking-tighter border-b-2 transition-all ${themeColors[tabName]}`;
     }
 </script>
@@ -373,12 +396,10 @@
 
 
 
-
-
-
 <!--        ==================================================== ПОЧАТОК ЛОГІКИ МОДАЛКИ КОМЕНТАРЯ ====================================================-->
 <div id="createCommentModal{{ post.id }}" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 ease-out">
     <div class="w-full max-w-lg bg-black border border-white/20 p-6">
+
         <!--                 ТИТУЛКА ВІКНА                         -->
         <div class="flex items-center gap-4 mb-6">
             <button id="closeCreateCommentModal{{ post.id }}" class="text-white/40 hover:text-white transition-colors cursor-pointer">
@@ -392,6 +413,7 @@
             {% csrf_token %}
             <!--            ДЛЯ ТОГО, ЩОБ ЗБЕРЕГАЛАСЬ ID ДЛЯ КОМЕНТАРЯ-->
             <input type="hidden" name="parent_id" id="parent_id{{ post.id }}" value="">
+
             <!--            АВАТАРКА                        -->
             <div class="flex gap-4">
                 <div class="w-10 h-10 border border-white/20 bg-white/5 shrink-0 overflow-hidden">
@@ -399,6 +421,7 @@
                         <img src="{{ request.user.profile.avatar }}" alt="user" class="w-full h-full object-cover"/>
                     {% endif %}
                 </div>
+
                 <!--            НАПОВНЕННЯ КОМЕНТАРЯ                        -->
                 <div class="flex-1">
                     <div class="font-bold text-sm mb-1 uppercase">{{ request.user.username }}</div>
@@ -418,11 +441,11 @@
                 </div>
             </div>
 
-                <div class="flex justify-end mt-4">
-                    <button type="submit" class="px-6 py-2 border border-white/40 text-white text-xs font-bold hover:bg-white/10 hover:border-white/60 transition-colors cursor-pointer">
-                        POST COMMENT
-                    </button>
-                </div>
+            <div class="flex justify-end mt-4">
+                <button type="submit" class="px-6 py-2 border border-white/40 text-white text-xs font-bold hover:bg-white/10 hover:border-white/60 transition-colors cursor-pointer">
+                    POST COMMENT
+                </button>
+            </div>
         </form>
     </div>
 </div>
@@ -434,6 +457,7 @@
 <!--        ==================================================== МОДАЛКА ДЛЯ СКАРГИ ====================================================-->
 <div id="reportModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-black border border-white/10 w-full max-w-md p-6 shadow-2xl">
+
         <div class="mb-4">
             <h2 class="text-xl font-black text-white uppercase tracking-tighter">Submit <span class="text-red-500">Report</span></h2>
             <p id="modalPostTitle" class="text-white/40 text-[10px] uppercase mt-1"></p>
@@ -446,7 +470,8 @@
             <textarea name="reason"
                       class="w-full bg-white/5 border border-white/10 text-white p-3 text-sm focus:border-red-500 outline-none transition-all resize-none"
                       rows="4"
-                      placeholder="Why is this toxic? Explain..."></textarea>
+                      placeholder="Why is this toxic? Explain...">
+            </textarea>
 
             <div class="flex gap-2 mt-4">
                 <button type="submit" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-black py-2 uppercase text-xs tracking-widest transition-colors">
@@ -461,8 +486,6 @@
 </div>
 <!--        ==================================================== КІНЕЦЬ МОДАЛКИ ДЛЯ СКАРГИ ====================================================-->
 
-
-
 <!--        ==================================================== ДЖАВАСКРИПТ ДЛЯ СКАРГИ ====================================================-->
 <script>
     function openReportModal(postId, postTitle) {
@@ -470,7 +493,7 @@
         const form = document.getElementById('reportForm');
         const title = document.getElementById('modalPostTitle');
 
-        // Встановлюємо динамічний URL для форми (заміни 'post' на назву свого URL-шляху)
+        // Встановлюємо динамічний URL для форми
         form.action = `/post/${postId}/report/`;
         title.innerText = `Post: "${postTitle}"`;
 
@@ -530,6 +553,7 @@
             likersModal.classList.add('opacity-100');
         });
     }
+
     if (closeLikersModalBtn && likersModal) {
         closeLikersModalBtn.addEventListener('click', () => {
             likersModal.classList.remove('opacity-100');
@@ -617,7 +641,7 @@
                 url: fullUrl
             }).catch(console.error);
         } else {
-            // Якщо Web Share API не підтримується (наприклад, старі ПК)
+            // Якщо Web Share API не підтримується
             navigator.clipboard.writeText(fullUrl);
             alert("Link copied! Share it with other toxic people.");
         }
@@ -625,7 +649,6 @@
 
     // Функція "Поскаржитись"
     function reportPost(postId) {
-        // Поки що просто імітація, пізніше можна зробити модалку або запит до БД
         const reason = prompt("Why is this post not toxic enough? (Reason):");
         if (reason) {
             alert("Thanks! We'll review post #" + postId + ". Stay toxic.");
@@ -633,9 +656,9 @@
     }
 
     function togglePostMenu(event, postId) {
-        event.stopPropagation(); // Щоб не спрацював перехід на сторінку поста
+        event.stopPropagation(); // Це щоб не спрацював перехід на сторінку поста
 
-        // Закриваємо всі інші відкриті меню, щоб не було каші
+        // Закриваємо всі інші відкриті меню
         document.querySelectorAll('.post-dropdown').forEach(menu => {
             if (menu.id !== 'dropdown-' + postId) menu.classList.add('hidden');
         });
@@ -644,7 +667,7 @@
         if (menu) menu.classList.toggle('hidden');
     }
 
-    // Закриття меню при кліку в будь-якому місці екрана
+    // Закриття меню при кліку на фоні
     document.addEventListener('click', function(e) {
         if (!e.target.closest('.post-dropdown') && !e.target.closest('.post-menu-button')) {
             document.querySelectorAll('.post-dropdown').forEach(m => m.classList.add('hidden'));
@@ -654,7 +677,7 @@
 
 
 
-<!--        ==================================================== ВИДАЛЕННЯ ПОСТА І КОМЕНТАРЯ  ====================================================-->
+<!--        ==================================================== ВИДАЛЕННЯ ПОСТА І КОМЕНТАРЯ  ====================================================     -->
 <div id="delete-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm">
     <div class="bg-black border border-white/10 p-8 max-w-sm w-full text-center">
         <h2 class="text-white font-black italic text-xl mb-2 uppercase tracking-tighter">Are you sure?</h2>
@@ -678,29 +701,29 @@
 
 <script>
     function toggleMenu(id) {
-    const menu = document.getElementById(id);
-    menu.classList.toggle('hidden');
+        const menu = document.getElementById(id);
+        menu.classList.toggle('hidden');
 
-    // Закриваємо меню, якщо клікнули десь інде
-    document.addEventListener('click', function closeMenu(e) {
-        if (!e.target.closest('button')) {
-            menu.classList.add('hidden');
-            document.removeEventListener('click', closeMenu);
-        }
-    });
-}
+        // Закриваємо меню, якщо клікнули десь інде
+        document.addEventListener('click', function closeMenu(e) {
+            if (!e.target.closest('button')) {
+                menu.classList.add('hidden');
+                document.removeEventListener('click', closeMenu);
+            }
+        });
+    }
 
-function openDeleteModal(url, itemName) {
-    const modal = document.getElementById('delete-modal');
-    const form = document.getElementById('delete-form');
+    function openDeleteModal(url, itemName) {
+        const modal = document.getElementById('delete-modal');
+        const form = document.getElementById('delete-form');
 
-    document.getElementById('modal-item-name').innerText = itemName;
-    form.action = url;
+        document.getElementById('modal-item-name').innerText = itemName;
+        form.action = url;
 
-    modal.classList.remove('hidden');
-}
+        modal.classList.remove('hidden');
+    }
 
-function closeDeleteModal() {
-    document.getElementById('delete-modal').classList.add('hidden');
-}
+    function closeDeleteModal() {
+        document.getElementById('delete-modal').classList.add('hidden');
+    }
 </script>
