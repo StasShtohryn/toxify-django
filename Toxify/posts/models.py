@@ -69,7 +69,6 @@ class Comment(models.Model):
         related_name='comments'
     )
     post_to = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='post_comments')
-    title = models.CharField(max_length=100)
     body = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     # Нескінченні коментарі, поле для посилання на самого себе

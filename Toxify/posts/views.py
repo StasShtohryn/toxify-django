@@ -9,7 +9,9 @@ from django.views.generic import ListView, TemplateView, DetailView
 from django.views import View
 from django.db.models import Q
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 
+from utils.blobs import upload_to_vercel_blob
 from . import forms
 from .forms import ReportForm, PostsForm
 from .models import Post, Hashtag, Comment, PostLike, Report, Reaction, CommentReaction, CommentLike
@@ -186,6 +188,29 @@ class PostDetailView(DetailView):
         return context
 
 
+import re
+from django.contrib.auth.models import User
+from .models import Notification  # Твоя модель сповіщень
+
+
+def handle_mentions(text, sender, post=None):
+    User = get_user_model()
+    usernames = re.findall(r'@(\w+)', text)
+
+    for username in usernames:
+        try:
+            receiver_user = User.objects.get(username=username)
+            if receiver_user != sender:
+                Notification.objects.create(
+                    sender=sender,
+                    recipient=receiver_user,
+                    post=post,
+                    message=f"mentioned you in a {'post'}"
+                )
+        except User.DoesNotExist:
+            continue
+
+
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     fields = ['title', 'body', 'images']
@@ -194,7 +219,6 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
-        # Змінюємо кількість рядків (rows) та додаємо класи Tailwind
         form.fields['body'].widget.attrs.update({
             'rows': '2',
         })
@@ -219,17 +243,17 @@ class PostCreateView(LoginRequiredMixin, CreateView):
             for tag_name in tag_list:
                 tag, created = Hashtag.objects.get_or_create(name=tag_name)
                 self.object.hashtags.add(tag)
-
-        _create_mention_notifications(
-            sender=self.request.user,
-            body=self.object.body or '',
-            post=self.object,
-            context_type='post',
-        )
+        if self.object.body:
+            handle_mentions(
+                text=self.object.body,
+                sender=self.request.user,
+                post=self.object,
+            )
 
         messages.success(self.request, "Post created successfully!")
 
         return response
+
 
     def get_success_url(self):
         return reverse('post_detail', kwargs={'post_id': self.object.pk}) + '?new=true'
@@ -252,7 +276,7 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
 class CommentCreateView(LoginRequiredMixin, CreateView):
     model = Comment
-    fields = ['title', 'body', 'images']
+    fields = ['body', 'images']
     template_name = 'posts/comment-create.html'
 
     def dispatch(self, request, *args, **kwargs):
@@ -282,13 +306,6 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
                 message=msg
             )
 
-        _create_mention_notifications(
-            sender=sender,
-            body=new_comment.body or '',
-            post=self.post_obj,
-            context_type='comment',
-        )
-
     def form_valid(self, form):
         form.instance.commentProfile = self.commentProfile
         form.instance.post_to = self.post_obj
@@ -302,9 +319,15 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
             from utils.blobs import upload_to_vercel_blob
             form.instance.images = upload_to_vercel_blob(image_file, folder="comments")
 
-
         response = super().form_valid(form)
         self.create_comment_notification()
+
+        if self.object.body:
+            handle_mentions(
+                text=self.object.body,
+                sender=self.request.user,
+                post=self.object.post_to,
+            )
 
         return response
 
@@ -627,7 +650,6 @@ def edit_post(request, post_id):
         return redirect('post_list')
 
     if request.method == "POST":
-        # Передаємо інстанс, щоб Django знав, який пост оновлювати
         form = PostsForm(request.POST, request.FILES, instance=post)
 
         if form.is_valid():
@@ -644,8 +666,7 @@ def edit_post(request, post_id):
                 for tag_name in hashtags_input.split(','):
                     tag_name = tag_name.strip().lower()
                     if tag_name:
-                        from .models import Tag
-                        tag, created = Tag.objects.get_or_create(name=tag_name)
+                        tag, created = Hashtag.objects.get_or_create(name=tag_name)
                         updated_post.hashtags.add(tag)
 
             return redirect('post_detail', post_id=updated_post.id)
@@ -658,3 +679,35 @@ def edit_post(request, post_id):
         'post': post,
         'current_tags': current_tags
     })
+
+
+@login_required
+def edit_comment(request, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id)
+    if comment.commentProfile.user != request.user:
+        return JsonResponse({'status': 'error', 'message': 'Access denied'}, status=403)
+
+    if request.method == "POST":
+        new_body = request.POST.get('body')
+        delete_image = request.POST.get('delete_image') == 'true'
+        image_file = request.FILES.get('images')
+
+        if new_body:
+            comment.body = new_body
+
+            if delete_image:
+                comment.images = ""
+
+            if image_file:
+                comment.images = upload_to_vercel_blob(image_file, folder="comments")
+
+            comment.save()
+
+            return JsonResponse({
+                'status': 'ok',
+                'new_body': comment.body,
+                'new_image': comment.images if comment.images else None,
+                'comment_id': comment.id
+            })
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
