@@ -33,11 +33,17 @@ class RegisterForm(UserCreationForm):
 
 
 class ProfileEditForm(forms.ModelForm):
-    """Редагування профілю: аватар + біо."""
+    """Редагування профілю: аватар + біо + закритий профіль."""
 
     class Meta:
         model = Profile
-        fields = ('name', "bio", 'tag')
+        fields = ('name', "bio", 'tag', 'is_closed')
+        labels = {
+            'is_closed': 'Закритий профіль',
+        }
+        help_texts = {
+            'is_closed': 'Тільки підписники бачать твої пости та відповіді',
+        }
         widgets = {
             'name': forms.TextInput(
                 attrs={
@@ -54,7 +60,8 @@ class ProfileEditForm(forms.ModelForm):
                 attrs={
                     'placeholder': 'Твій статус...'
                 }
-            )
+            ),
+            'is_closed': forms.CheckboxInput(attrs={'class': 'w-4 h-4 accent-green-500'}),
         }
 
     def clean_bio(self):

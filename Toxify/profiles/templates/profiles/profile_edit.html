@@ -27,13 +27,63 @@
                               hover:file:bg-white/20 cursor-pointer">
             </div>        
             {% for field in profile_form %}
+                {% if field.name != 'is_closed' %}
                 <div>
                     <label class="mb-0.5 block text-sm text-white/70">
                         {{ field.label }}
                     </label>
                     {{ field|add_class:"w-full border border-white/20 px-3 py-2 text-sm" }}
                 </div>
+                {% endif %}
             {% endfor %}
+
+            <!-- Закритий профіль: анімаційний перемикач із замком -->
+            <div class="pt-4 pb-2 border-t border-white/10">
+                <p class="mb-3 text-xs text-white/50">Тільки підписники бачать твої пости та відповіді</p>
+                <label class="profile-lock-toggle flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-all duration-300 select-none
+                    {% if profile.is_closed %}profile-closed{% endif %}">
+                    <input type="checkbox" name="is_closed" value="1" class="sr-only peer"
+                        {% if profile.is_closed %}checked{% endif %}>
+                    <span class="lock-icon-wrapper relative w-14 h-14 flex items-center justify-center shrink-0">
+                        <svg class="lock-open absolute w-8 h-8 text-green-500 transition-all duration-300 ease-out" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M8 11V7a4 4 0 1 1 8 0m-4 8v2m-6 4h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2z"/>
+                        </svg>
+                        <svg class="lock-closed absolute w-8 h-8 text-red-500 transition-all duration-300 ease-out" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                    </span>
+                    <span class="flex-1 min-w-0">
+                        <span class="profile-status-open text-sm font-medium text-green-400 block transition-opacity duration-300">Профіль відкритий</span>
+                        <span class="profile-status-closed text-sm font-medium text-red-400 opacity-0 hidden transition-opacity duration-300">Профіль закритий</span>
+                    </span>
+                    <span class="text-[10px] text-white/40 whitespace-nowrap">натисни</span>
+                </label>
+            </div>
+            <style>
+                .profile-lock-toggle { background: rgba(34, 197, 94, 0.05); border-color: rgba(34, 197, 94, 0.3); }
+                .profile-lock-toggle:hover { border-color: rgba(34, 197, 94, 0.5); }
+                .profile-lock-toggle .lock-open { opacity: 1; transform: scale(1); transition: opacity 0.3s, transform 0.3s; }
+                .profile-lock-toggle .lock-closed { opacity: 0; transform: scale(0.5) rotate(-20deg); transition: opacity 0.3s, transform 0.3s; }
+                .profile-lock-toggle.profile-closed { background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.4); }
+                .profile-lock-toggle.profile-closed:hover { border-color: rgba(239, 68, 68, 0.6); }
+                .profile-lock-toggle.profile-closed .lock-open { opacity: 0; transform: scale(0.5) rotate(20deg); }
+                .profile-lock-toggle.profile-closed .lock-closed { opacity: 1; transform: scale(1) rotate(0deg); }
+                .profile-lock-toggle.profile-closed .profile-status-open { display: none; }
+                .profile-lock-toggle.profile-closed .profile-status-closed { display: block; opacity: 1; }
+                .profile-lock-toggle:active .lock-icon-wrapper { transform: scale(0.9); }
+                .profile-lock-toggle .lock-icon-wrapper { transition: transform 0.15s ease-out; }
+            </style>
+            <script>
+                (function() {
+                    const label = document.querySelector('.profile-lock-toggle');
+                    const checkbox = label?.querySelector('input[name="is_closed"]');
+                    if (!label || !checkbox) return;
+                    checkbox.addEventListener('change', function() {
+                        label.classList.toggle('profile-closed', this.checked);
+                    });
+                })();
+            </script>
             {% for field in account_form %}
                 <div>
                     <label class="mb-0.5 block text-sm text-white/70">
