@@ -65,19 +65,30 @@ class ProfileDetailView(DetailView):
             and self.request.user != profile.user
             and self.request.user.profile.is_following(profile)
         )
-        posts = list(profile.posts.order_by("-created_at")[:20])
-        _add_liked_to_posts(self.request, posts)
-        context["posts"] = posts
 
-        # Репости профілю — пости, які цей юзер репостив
-        reposts_qs = Repost.objects.filter(profile=profile).select_related('post', 'post__userProfile', 'post__userProfile__user').order_by('-created_at')[:20]
-        reposted_posts = [r.post for r in reposts_qs]
-        _add_liked_to_posts(self.request, reposted_posts)
-        context["reposted_posts"] = reposted_posts
+        # Закритий профіль: контент бачать тільки власник або підписники
+        can_see_content = context["is_owner"] or (
+            profile.is_closed and context["is_following"]
+        ) or not profile.is_closed
+        context["profile_is_hidden"] = not can_see_content
 
-        context['replies'] = Comment.objects.filter(
-            commentProfile=profile
-        ).select_related('post_to').order_by('-created_at')
+        if can_see_content:
+            posts = list(profile.posts.order_by("-created_at")[:20])
+            _add_liked_to_posts(self.request, posts)
+            context["posts"] = posts
+
+            reposts_qs = Repost.objects.filter(profile=profile).select_related('post', 'post__userProfile', 'post__userProfile__user').order_by('-created_at')[:20]
+            reposted_posts = [r.post for r in reposts_qs]
+            _add_liked_to_posts(self.request, reposted_posts)
+            context["reposted_posts"] = reposted_posts
+
+            context['replies'] = Comment.objects.filter(
+                commentProfile=profile
+            ).select_related('post_to').order_by('-created_at')
+        else:
+            context["posts"] = []
+            context["reposted_posts"] = []
+            context["replies"] = []
 
         return context
 
