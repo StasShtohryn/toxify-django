@@ -24,6 +24,7 @@
         </div>
       </div>
 
+      {% if not profile_is_hidden %}
       <p class="text-sm text-white/80 mb-6 leading-relaxed">
         {% if profile.bio %}{{profile.bio}}{% else %}no bio yet.{% endif %}
       </p>
@@ -72,9 +73,33 @@
           {% endif %}
         </div>
       </div>
+      {% else %}
+      <!-- Закритий профіль: показуємо тільки заклик підписатись -->
+      <p class="text-sm text-white/50 mb-6 py-4 border-y border-white/10">
+        Цей профіль закритий. Підпишись, щоб бачити пости та відповіді.
+      </p>
+      <div class="flex justify-between items-center">
+        <span class="text-xs text-white/40">{{ profile.followers_count }} FOLLOWERS</span>
+        <div class="flex gap-2">
+          {% if user.is_authenticated %}
+            <form action="{% url 'follow_toggle' username=profile.user.username %}" method="post" style="display: inline;">
+              {% csrf_token %}
+              <button type="submit" class="px-4 py-2 border border-green-500 text-green-500 text-xs font-bold hover:bg-green-500 hover:text-black transition-colors">
+                Підписатись
+              </button>
+            </form>
+          {% else %}
+            <a href="{% url 'login' %}?next={{ request.path }}" class="px-4 py-2 border border-green-500 text-green-500 text-xs font-bold hover:bg-green-500 hover:text-black transition-colors">
+              Підписатись
+            </a>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
     </div>
 
 
+    {% if not profile_is_hidden %}
     <div class="flex border-b border-white/10">
       <button onclick="switchTab('posts')" id="tab-posts" class="flex-1 py-4 text-xs cursor-pointer font-bold relative group">
         <span class="tab-label opacity-100 transition-opacity">POSTS</span>
@@ -117,6 +142,7 @@
             {% endif %}
         </div>
     </div>
+    {% endif %}
 </div>
 
 <!-- Модальне вікно підписників / підписок -->

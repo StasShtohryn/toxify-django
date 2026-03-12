@@ -44,6 +44,12 @@ class Profile(models.Model):
         default='',
     )
 
+    # Закритий профіль: контент бачать тільки підписники
+    is_closed = models.BooleanField(
+        default=False,
+        help_text="Якщо True — пости/репости/відповіді видно тільки підписникам",
+    )
+
     # ── Підписки ─────────────────────────────────────────────────────────────
     following = models.ManyToManyField(
         "self",
