@@ -11,7 +11,7 @@
                 type="text"
                 name="q"
                 value="{{ query }}"
-                placeholder="#хештег, @юзернейм або текст..."
+                placeholder="# hashtag, @username or text..."
                 autocomplete="off"
                 class="w-full bg-white/5 border border-white/10 py-3 pl-10 pr-4 text-sm focus:outline-none focus:border-white/30 transition-colors text-white"
             />
@@ -51,7 +51,7 @@
 
         <!-- Пости -->
         {% if posts %}
-            <div class="mt-6 mb-2 text-xs font-bold text-white/40 uppercase tracking-wider">Пости</div>
+            <div class="mt-6 mb-2 text-xs font-bold text-white/40 uppercase tracking-wider">Posts</div>
             {% for post in posts %}
                 {% include 'posts/base_post.html' with post=post %}
             {% endfor %}
@@ -59,7 +59,7 @@
 
         {% if not profiles and not posts %}
             <div class="mt-12 text-center text-white/30 text-sm">
-                Нічого не знайдено по запиту «{{ query }}»
+                We can't find anything like «{{ query }}»
             </div>
         {% endif %}
     {% endif %}
