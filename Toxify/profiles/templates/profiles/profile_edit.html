@@ -16,7 +16,7 @@
         <form method="post" enctype="multipart/form-data" class="space-y-3">
             {% csrf_token %}
             <div>
-                <label class="mb-0.5 block text-sm text-white/70">Аватар</label>
+                <label class="mb-0.5 block text-sm text-white/70">Avatar</label>
                 {% if profile.avatar %}
                     <img src="{{ profile.avatar }}" alt="avatar" class="w-16 h-16 object-cover mb-2">
                 {% endif %}
@@ -37,9 +37,9 @@
                 {% endif %}
             {% endfor %}
 
-            <!-- Закритий профіль: анімаційний перемикач із замком -->
+            <!-- Closed profile: animated lock toggle -->
             <div class="pt-4 pb-2 border-t border-white/10">
-                <p class="mb-3 text-xs text-white/50">Тільки підписники бачать твої пости та відповіді</p>
+                <p class="mb-3 text-xs text-white/50">Only followers can see your posts and replies</p>
                 <label class="profile-lock-toggle flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-all duration-300 select-none
                     {% if profile.is_closed %}profile-closed{% endif %}">
                     <input type="checkbox" name="is_closed" value="1" class="sr-only peer"
@@ -54,10 +54,10 @@
                         </svg>
                     </span>
                     <span class="flex-1 min-w-0">
-                        <span class="profile-status-open text-sm font-medium text-green-400 block transition-opacity duration-300">Профіль відкритий</span>
-                        <span class="profile-status-closed text-sm font-medium text-red-400 opacity-0 hidden transition-opacity duration-300">Профіль закритий</span>
+                        <span class="profile-status-open text-sm font-medium text-green-400 block transition-opacity duration-300">Profile is open</span>
+                        <span class="profile-status-closed text-sm font-medium text-red-400 opacity-0 hidden transition-opacity duration-300">Profile is closed</span>
                     </span>
-                    <span class="text-[10px] text-white/40 whitespace-nowrap">натисни</span>
+                    <span class="text-[10px] text-white/40 whitespace-nowrap">tap to toggle</span>
                 </label>
             </div>
             <style>

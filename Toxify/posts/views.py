@@ -24,14 +24,12 @@ import re
 
 
 def _get_mentioned_usernames(text):
-    """Повертає множину username з тексту (@username)."""
     if not text:
         return set()
     return set(re.findall(r'@(\w+)', text))
 
 
 def _create_mention_notifications(sender, body, post, context_type):
-    """Створює сповіщення для всіх згаданих через @ користувачів."""
     usernames = _get_mentioned_usernames(body)
     for username in usernames:
         try:
@@ -93,7 +91,6 @@ class SearchView(TemplateView):
 
 
 def _add_liked_to_posts(request, posts):
-    """Додає post.user_has_liked та post.user_has_reposted для кожного поста."""
     post_list = list(posts) if hasattr(posts, '__iter__') and not isinstance(posts, (str, dict)) else [posts]
     if not post_list:
         return
