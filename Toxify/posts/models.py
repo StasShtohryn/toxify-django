@@ -107,7 +107,6 @@ class Comment(models.Model):
 
 
 class PostLike(models.Model):
-    """Лайк поста. Один юзер — один лайк на пост."""
     profile = models.ForeignKey(
         "profiles.Profile",
         on_delete=models.CASCADE,
@@ -135,7 +134,6 @@ class CommentLike(models.Model):
 
 
 class Reaction(models.Model):
-    """ Реакція людини на пост. Потрібна для формування рейтингу. """
     REACTION_CHOICES = [
         ('toxic', 'Toxic'),
         ('cringe', 'Cringe'),
@@ -167,7 +165,7 @@ class CommentReaction(models.Model):
         on_delete=models.CASCADE,
         related_name='comment_reactions'
     )
-    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='comment_reactions') # Зв'язок з коментарем!
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='comment_reactions')
     type = models.CharField(max_length=10, choices=REACTION_CHOICES)
 
     class Meta:

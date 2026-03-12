@@ -39,26 +39,26 @@ class ProfileEditForm(forms.ModelForm):
         model = Profile
         fields = ('name', "bio", 'tag', 'is_closed')
         labels = {
-            'is_closed': 'Закритий профіль',
+            'is_closed': 'Closed profile',
         }
         help_texts = {
-            'is_closed': 'Тільки підписники бачать твої пости та відповіді',
+            'is_closed': 'Only followers can see your posts and replies',
         }
         widgets = {
             'name': forms.TextInput(
                 attrs={
-                    'placeholder': 'Введіть ваше ім\'я '
+                    'placeholder': 'Enter your name'
                 }
             ),
             "bio": forms.Textarea(
                 attrs={
                     "rows": 4,
-                    "placeholder": "Розкажи щось токсичне про себе...",
+                    "placeholder": "Tell something toxic about yourself...",
                 }
             ),
             'tag': forms.TextInput(
                 attrs={
-                    'placeholder': 'Твій статус...'
+                    'placeholder': 'Your status...'
                 }
             ),
             'is_closed': forms.CheckboxInput(attrs={'class': 'w-4 h-4 accent-green-500'}),
@@ -67,7 +67,7 @@ class ProfileEditForm(forms.ModelForm):
     def clean_bio(self):
         bio = self.cleaned_data.get("bio", "")
         if len(bio) > 300:
-            raise forms.ValidationError("Біо не може перевищувати 300 символів.")
+            raise forms.ValidationError("Bio cannot exceed 300 characters.")
         return bio
 
     # def clean_avatar(self):
